@@ -1,0 +1,529 @@
+{
+  "openai/gpt-4o": {
+    "performance": {
+      "coding": 0.88, "reasoning": 0.90, "mathematics": 0.85,
+      "creative_writing": 0.91, "instruction_following": 0.95,
+      "long_context": 0.88, "json_reliability": 0.96,
+      "vision_understanding": 0.92, "audio_understanding": 0.85,
+      "ocr": 0.90, "document_qa": 0.89, "summarization": 0.90,
+      "translation": 0.88, "table_understanding": 0.87,
+      "agentic_tasks": 0.84, "scientific_reasoning": 0.86,
+      "spreadsheet_reasoning": 0.85
+    },
+    "domains": {
+      "general": 0.92, "software": 0.90, "legal": 0.82, "medical": 0.80,
+      "finance": 0.83, "science": 0.86, "education": 0.91,
+      "customer_support": 0.90, "research": 0.87, "mathematics": 0.85
+    }
+  },
+  "openai/gpt-4o-mini": {
+    "performance": {
+      "coding": 0.75, "reasoning": 0.73, "mathematics": 0.70,
+      "creative_writing": 0.78, "instruction_following": 0.82,
+      "long_context": 0.72, "json_reliability": 0.90,
+      "vision_understanding": 0.74, "audio_understanding": 0.10,
+      "ocr": 0.72, "document_qa": 0.73, "summarization": 0.77,
+      "translation": 0.75, "table_understanding": 0.70,
+      "agentic_tasks": 0.65, "scientific_reasoning": 0.68,
+      "spreadsheet_reasoning": 0.68
+    },
+    "domains": {
+      "general": 0.80, "software": 0.76, "legal": 0.65, "medical": 0.62,
+      "finance": 0.66, "science": 0.68, "education": 0.78,
+      "customer_support": 0.82, "research": 0.70, "mathematics": 0.70
+    }
+  },
+  "openai/gpt-4o-mini-2024-07-18": {
+    "performance": {
+      "coding": 0.75, "reasoning": 0.73, "mathematics": 0.70,
+      "creative_writing": 0.78, "instruction_following": 0.82,
+      "long_context": 0.72, "json_reliability": 0.90,
+      "vision_understanding": 0.74, "audio_understanding": 0.10,
+      "ocr": 0.72, "document_qa": 0.73, "summarization": 0.77,
+      "translation": 0.75, "table_understanding": 0.70,
+      "agentic_tasks": 0.65, "scientific_reasoning": 0.68,
+      "spreadsheet_reasoning": 0.68
+    },
+    "domains": {
+      "general": 0.80, "software": 0.76, "legal": 0.65, "medical": 0.62,
+      "finance": 0.66, "science": 0.68, "education": 0.78,
+      "customer_support": 0.82, "research": 0.70, "mathematics": 0.70
+    }
+  },
+  "openai/gpt-4.1": {
+    "performance": {
+      "coding": 0.93, "reasoning": 0.91, "mathematics": 0.88,
+      "creative_writing": 0.89, "instruction_following": 0.96,
+      "long_context": 0.95, "json_reliability": 0.97,
+      "vision_understanding": 0.90, "audio_understanding": 0.10,
+      "ocr": 0.88, "document_qa": 0.92, "summarization": 0.91,
+      "translation": 0.89, "table_understanding": 0.90,
+      "agentic_tasks": 0.90, "scientific_reasoning": 0.89,
+      "spreadsheet_reasoning": 0.88
+    },
+    "domains": {
+      "general": 0.94, "software": 0.93, "legal": 0.85, "medical": 0.83,
+      "finance": 0.86, "science": 0.89, "education": 0.92,
+      "customer_support": 0.91, "research": 0.90, "mathematics": 0.88
+    }
+  },
+  "openai/gpt-4.1-mini": {
+    "performance": {
+      "coding": 0.80, "reasoning": 0.78, "mathematics": 0.75,
+      "creative_writing": 0.80, "instruction_following": 0.86,
+      "long_context": 0.82, "json_reliability": 0.93,
+      "vision_understanding": 0.76, "audio_understanding": 0.10,
+      "ocr": 0.75, "document_qa": 0.78, "summarization": 0.80,
+      "translation": 0.78, "table_understanding": 0.75,
+      "agentic_tasks": 0.72, "scientific_reasoning": 0.74,
+      "spreadsheet_reasoning": 0.73
+    },
+    "domains": {
+      "general": 0.84, "software": 0.81, "legal": 0.70, "medical": 0.68,
+      "finance": 0.72, "science": 0.74, "education": 0.82,
+      "customer_support": 0.85, "research": 0.76, "mathematics": 0.75
+    }
+  },
+  "openai/gpt-4.1-nano": {
+    "performance": {
+      "coding": 0.65, "reasoning": 0.60, "mathematics": 0.55,
+      "creative_writing": 0.68, "instruction_following": 0.75,
+      "long_context": 0.60, "json_reliability": 0.85,
+      "vision_understanding": 0.55, "audio_understanding": 0.10,
+      "ocr": 0.50, "document_qa": 0.58, "summarization": 0.65,
+      "translation": 0.62, "table_understanding": 0.55,
+      "agentic_tasks": 0.48, "scientific_reasoning": 0.52,
+      "spreadsheet_reasoning": 0.50
+    },
+    "domains": {
+      "general": 0.70, "software": 0.65, "legal": 0.50, "medical": 0.48,
+      "finance": 0.52, "science": 0.54, "education": 0.68,
+      "customer_support": 0.72, "research": 0.55, "mathematics": 0.55
+    }
+  },
+  "openai/o3": {
+    "performance": {
+      "coding": 0.96, "reasoning": 0.98, "mathematics": 0.97,
+      "creative_writing": 0.85, "instruction_following": 0.93,
+      "long_context": 0.90, "json_reliability": 0.94,
+      "vision_understanding": 0.88, "audio_understanding": 0.10,
+      "ocr": 0.85, "document_qa": 0.90, "summarization": 0.88,
+      "translation": 0.85, "table_understanding": 0.88,
+      "agentic_tasks": 0.95, "scientific_reasoning": 0.97,
+      "spreadsheet_reasoning": 0.88
+    },
+    "domains": {
+      "general": 0.93, "software": 0.96, "legal": 0.88, "medical": 0.90,
+      "finance": 0.91, "science": 0.97, "education": 0.92,
+      "customer_support": 0.82, "research": 0.95, "mathematics": 0.97
+    }
+  },
+  "openai/o4-mini": {
+    "performance": {
+      "coding": 0.92, "reasoning": 0.93, "mathematics": 0.94,
+      "creative_writing": 0.78, "instruction_following": 0.88,
+      "long_context": 0.82, "json_reliability": 0.92,
+      "vision_understanding": 0.80, "audio_understanding": 0.10,
+      "ocr": 0.78, "document_qa": 0.82, "summarization": 0.80,
+      "translation": 0.78, "table_understanding": 0.80,
+      "agentic_tasks": 0.88, "scientific_reasoning": 0.92,
+      "spreadsheet_reasoning": 0.80
+    },
+    "domains": {
+      "general": 0.86, "software": 0.92, "legal": 0.78, "medical": 0.80,
+      "finance": 0.82, "science": 0.92, "education": 0.85,
+      "customer_support": 0.78, "research": 0.88, "mathematics": 0.94
+    }
+  },
+  "anthropic/claude-3-haiku": {
+    "performance": {
+      "coding": 0.68, "reasoning": 0.65, "mathematics": 0.58,
+      "creative_writing": 0.72, "instruction_following": 0.78,
+      "long_context": 0.70, "json_reliability": 0.85,
+      "vision_understanding": 0.65, "audio_understanding": 0.10,
+      "ocr": 0.62, "document_qa": 0.66, "summarization": 0.72,
+      "translation": 0.68, "table_understanding": 0.62,
+      "agentic_tasks": 0.55, "scientific_reasoning": 0.60,
+      "spreadsheet_reasoning": 0.58
+    },
+    "domains": {
+      "general": 0.75, "software": 0.68, "legal": 0.60, "medical": 0.58,
+      "finance": 0.60, "science": 0.62, "education": 0.72,
+      "customer_support": 0.78, "research": 0.65, "mathematics": 0.58
+    }
+  },
+  "anthropic/claude-3.5-sonnet": {
+    "performance": {
+      "coding": 0.95, "reasoning": 0.93, "mathematics": 0.88,
+      "creative_writing": 0.94, "instruction_following": 0.96,
+      "long_context": 0.95, "json_reliability": 0.95,
+      "vision_understanding": 0.88, "audio_understanding": 0.10,
+      "ocr": 0.85, "document_qa": 0.92, "summarization": 0.94,
+      "translation": 0.90, "table_understanding": 0.88,
+      "agentic_tasks": 0.92, "scientific_reasoning": 0.91,
+      "spreadsheet_reasoning": 0.86
+    },
+    "domains": {
+      "general": 0.95, "software": 0.95, "legal": 0.90, "medical": 0.85,
+      "finance": 0.87, "science": 0.90, "education": 0.93,
+      "customer_support": 0.92, "research": 0.92, "mathematics": 0.88
+    }
+  },
+  "anthropic/claude-sonnet-4": {
+    "performance": {
+      "coding": 0.96, "reasoning": 0.95, "mathematics": 0.90,
+      "creative_writing": 0.94, "instruction_following": 0.97,
+      "long_context": 0.96, "json_reliability": 0.96,
+      "vision_understanding": 0.90, "audio_understanding": 0.10,
+      "ocr": 0.87, "document_qa": 0.93, "summarization": 0.95,
+      "translation": 0.91, "table_understanding": 0.90,
+      "agentic_tasks": 0.94, "scientific_reasoning": 0.93,
+      "spreadsheet_reasoning": 0.88
+    },
+    "domains": {
+      "general": 0.96, "software": 0.96, "legal": 0.92, "medical": 0.88,
+      "finance": 0.90, "science": 0.93, "education": 0.95,
+      "customer_support": 0.93, "research": 0.94, "mathematics": 0.90
+    }
+  },
+  "anthropic/claude-opus-4": {
+    "performance": {
+      "coding": 0.97, "reasoning": 0.97, "mathematics": 0.93,
+      "creative_writing": 0.96, "instruction_following": 0.98,
+      "long_context": 0.97, "json_reliability": 0.97,
+      "vision_understanding": 0.92, "audio_understanding": 0.10,
+      "ocr": 0.90, "document_qa": 0.95, "summarization": 0.96,
+      "translation": 0.93, "table_understanding": 0.92,
+      "agentic_tasks": 0.96, "scientific_reasoning": 0.96,
+      "spreadsheet_reasoning": 0.90
+    },
+    "domains": {
+      "general": 0.97, "software": 0.97, "legal": 0.94, "medical": 0.92,
+      "finance": 0.93, "science": 0.96, "education": 0.96,
+      "customer_support": 0.94, "research": 0.96, "mathematics": 0.93
+    }
+  },
+  "anthropic/claude-haiku-4.5": {
+    "performance": {
+      "coding": 0.78, "reasoning": 0.75, "mathematics": 0.70,
+      "creative_writing": 0.80, "instruction_following": 0.85,
+      "long_context": 0.78, "json_reliability": 0.90,
+      "vision_understanding": 0.72, "audio_understanding": 0.10,
+      "ocr": 0.68, "document_qa": 0.74, "summarization": 0.80,
+      "translation": 0.76, "table_understanding": 0.70,
+      "agentic_tasks": 0.68, "scientific_reasoning": 0.70,
+      "spreadsheet_reasoning": 0.66
+    },
+    "domains": {
+      "general": 0.82, "software": 0.78, "legal": 0.68, "medical": 0.65,
+      "finance": 0.68, "science": 0.70, "education": 0.80,
+      "customer_support": 0.84, "research": 0.72, "mathematics": 0.70
+    }
+  },
+  "google/gemini-2.5-pro": {
+    "performance": {
+      "coding": 0.95, "reasoning": 0.95, "mathematics": 0.94,
+      "creative_writing": 0.90, "instruction_following": 0.94,
+      "long_context": 0.98, "json_reliability": 0.95,
+      "vision_understanding": 0.93, "audio_understanding": 0.88,
+      "ocr": 0.92, "document_qa": 0.95, "summarization": 0.93,
+      "translation": 0.92, "table_understanding": 0.93,
+      "agentic_tasks": 0.93, "scientific_reasoning": 0.95,
+      "spreadsheet_reasoning": 0.92
+    },
+    "domains": {
+      "general": 0.95, "software": 0.95, "legal": 0.88, "medical": 0.90,
+      "finance": 0.89, "science": 0.95, "education": 0.94,
+      "customer_support": 0.90, "research": 0.95, "mathematics": 0.94
+    }
+  },
+  "google/gemini-2.5-flash": {
+    "performance": {
+      "coding": 0.88, "reasoning": 0.87, "mathematics": 0.85,
+      "creative_writing": 0.82, "instruction_following": 0.88,
+      "long_context": 0.92, "json_reliability": 0.92,
+      "vision_understanding": 0.85, "audio_understanding": 0.78,
+      "ocr": 0.85, "document_qa": 0.87, "summarization": 0.86,
+      "translation": 0.85, "table_understanding": 0.84,
+      "agentic_tasks": 0.82, "scientific_reasoning": 0.85,
+      "spreadsheet_reasoning": 0.82
+    },
+    "domains": {
+      "general": 0.88, "software": 0.88, "legal": 0.78, "medical": 0.76,
+      "finance": 0.80, "science": 0.85, "education": 0.87,
+      "customer_support": 0.85, "research": 0.84, "mathematics": 0.85
+    }
+  },
+  "google/gemini-2.5-flash-lite": {
+    "performance": {
+      "coding": 0.72, "reasoning": 0.70, "mathematics": 0.68,
+      "creative_writing": 0.72, "instruction_following": 0.78,
+      "long_context": 0.80, "json_reliability": 0.85,
+      "vision_understanding": 0.70, "audio_understanding": 0.60,
+      "ocr": 0.68, "document_qa": 0.72, "summarization": 0.74,
+      "translation": 0.72, "table_understanding": 0.68,
+      "agentic_tasks": 0.62, "scientific_reasoning": 0.66,
+      "spreadsheet_reasoning": 0.65
+    },
+    "domains": {
+      "general": 0.76, "software": 0.72, "legal": 0.60, "medical": 0.58,
+      "finance": 0.62, "science": 0.66, "education": 0.74,
+      "customer_support": 0.78, "research": 0.68, "mathematics": 0.68
+    }
+  },
+  "deepseek/deepseek-chat": {
+    "performance": {
+      "coding": 0.90, "reasoning": 0.88, "mathematics": 0.90,
+      "creative_writing": 0.82, "instruction_following": 0.88,
+      "long_context": 0.85, "json_reliability": 0.90,
+      "vision_understanding": 0.10, "audio_understanding": 0.10,
+      "ocr": 0.10, "document_qa": 0.80, "summarization": 0.85,
+      "translation": 0.82, "table_understanding": 0.82,
+      "agentic_tasks": 0.82, "scientific_reasoning": 0.88,
+      "spreadsheet_reasoning": 0.80
+    },
+    "domains": {
+      "general": 0.88, "software": 0.90, "legal": 0.75, "medical": 0.72,
+      "finance": 0.78, "science": 0.88, "education": 0.85,
+      "customer_support": 0.82, "research": 0.85, "mathematics": 0.90
+    }
+  },
+  "deepseek/deepseek-r1": {
+    "performance": {
+      "coding": 0.92, "reasoning": 0.96, "mathematics": 0.97,
+      "creative_writing": 0.78, "instruction_following": 0.85,
+      "long_context": 0.82, "json_reliability": 0.82,
+      "vision_understanding": 0.10, "audio_understanding": 0.10,
+      "ocr": 0.10, "document_qa": 0.78, "summarization": 0.80,
+      "translation": 0.75, "table_understanding": 0.78,
+      "agentic_tasks": 0.85, "scientific_reasoning": 0.96,
+      "spreadsheet_reasoning": 0.78
+    },
+    "domains": {
+      "general": 0.85, "software": 0.92, "legal": 0.80, "medical": 0.82,
+      "finance": 0.85, "science": 0.96, "education": 0.88,
+      "customer_support": 0.72, "research": 0.93, "mathematics": 0.97
+    }
+  },
+  "meta-llama/llama-3-70b-instruct": {
+    "performance": {
+      "coding": 0.82, "reasoning": 0.80, "mathematics": 0.75,
+      "creative_writing": 0.80, "instruction_following": 0.85,
+      "long_context": 0.72, "json_reliability": 0.82,
+      "vision_understanding": 0.10, "audio_understanding": 0.10,
+      "ocr": 0.10, "document_qa": 0.72, "summarization": 0.80,
+      "translation": 0.75, "table_understanding": 0.70,
+      "agentic_tasks": 0.72, "scientific_reasoning": 0.78,
+      "spreadsheet_reasoning": 0.68
+    },
+    "domains": {
+      "general": 0.84, "software": 0.82, "legal": 0.70, "medical": 0.68,
+      "finance": 0.72, "science": 0.78, "education": 0.82,
+      "customer_support": 0.80, "research": 0.78, "mathematics": 0.75
+    }
+  },
+  "meta-llama/llama-3.3-70b-instruct": {
+    "performance": {
+      "coding": 0.85, "reasoning": 0.84, "mathematics": 0.80,
+      "creative_writing": 0.82, "instruction_following": 0.88,
+      "long_context": 0.78, "json_reliability": 0.88,
+      "vision_understanding": 0.10, "audio_understanding": 0.10,
+      "ocr": 0.10, "document_qa": 0.78, "summarization": 0.83,
+      "translation": 0.80, "table_understanding": 0.75,
+      "agentic_tasks": 0.78, "scientific_reasoning": 0.82,
+      "spreadsheet_reasoning": 0.73
+    },
+    "domains": {
+      "general": 0.86, "software": 0.85, "legal": 0.74, "medical": 0.72,
+      "finance": 0.76, "science": 0.82, "education": 0.85,
+      "customer_support": 0.83, "research": 0.82, "mathematics": 0.80
+    }
+  },
+  "meta-llama/llama-3.3-70b-instruct:free": {
+    "performance": {
+      "coding": 0.85, "reasoning": 0.84, "mathematics": 0.80,
+      "creative_writing": 0.82, "instruction_following": 0.88,
+      "long_context": 0.78, "json_reliability": 0.88,
+      "vision_understanding": 0.10, "audio_understanding": 0.10,
+      "ocr": 0.10, "document_qa": 0.78, "summarization": 0.83,
+      "translation": 0.80, "table_understanding": 0.75,
+      "agentic_tasks": 0.78, "scientific_reasoning": 0.82,
+      "spreadsheet_reasoning": 0.73
+    },
+    "domains": {
+      "general": 0.86, "software": 0.85, "legal": 0.74, "medical": 0.72,
+      "finance": 0.76, "science": 0.82, "education": 0.85,
+      "customer_support": 0.83, "research": 0.82, "mathematics": 0.80
+    }
+  },
+  "mistralai/mistral-large": {
+    "performance": {
+      "coding": 0.88, "reasoning": 0.86, "mathematics": 0.82,
+      "creative_writing": 0.85, "instruction_following": 0.90,
+      "long_context": 0.82, "json_reliability": 0.92,
+      "vision_understanding": 0.10, "audio_understanding": 0.10,
+      "ocr": 0.10, "document_qa": 0.82, "summarization": 0.85,
+      "translation": 0.90, "table_understanding": 0.80,
+      "agentic_tasks": 0.82, "scientific_reasoning": 0.84,
+      "spreadsheet_reasoning": 0.78
+    },
+    "domains": {
+      "general": 0.88, "software": 0.88, "legal": 0.80, "medical": 0.76,
+      "finance": 0.80, "science": 0.84, "education": 0.87,
+      "customer_support": 0.85, "research": 0.84, "mathematics": 0.82
+    }
+  },
+  "mistralai/mistral-small-24b-instruct-2501": {
+    "performance": {
+      "coding": 0.72, "reasoning": 0.70, "mathematics": 0.65,
+      "creative_writing": 0.72, "instruction_following": 0.78,
+      "long_context": 0.68, "json_reliability": 0.85,
+      "vision_understanding": 0.10, "audio_understanding": 0.10,
+      "ocr": 0.10, "document_qa": 0.68, "summarization": 0.72,
+      "translation": 0.78, "table_understanding": 0.65,
+      "agentic_tasks": 0.62, "scientific_reasoning": 0.66,
+      "spreadsheet_reasoning": 0.62
+    },
+    "domains": {
+      "general": 0.76, "software": 0.72, "legal": 0.60, "medical": 0.58,
+      "finance": 0.62, "science": 0.66, "education": 0.74,
+      "customer_support": 0.78, "research": 0.68, "mathematics": 0.65
+    }
+  },
+  "mistralai/codestral-2508": {
+    "performance": {
+      "coding": 0.93, "reasoning": 0.82, "mathematics": 0.80,
+      "creative_writing": 0.65, "instruction_following": 0.85,
+      "long_context": 0.78, "json_reliability": 0.90,
+      "vision_understanding": 0.10, "audio_understanding": 0.10,
+      "ocr": 0.10, "document_qa": 0.70, "summarization": 0.72,
+      "translation": 0.68, "table_understanding": 0.72,
+      "agentic_tasks": 0.80, "scientific_reasoning": 0.78,
+      "spreadsheet_reasoning": 0.70
+    },
+    "domains": {
+      "general": 0.75, "software": 0.93, "legal": 0.55, "medical": 0.50,
+      "finance": 0.58, "science": 0.72, "education": 0.70,
+      "customer_support": 0.62, "research": 0.68, "mathematics": 0.80
+    }
+  },
+  "qwen/qwen3-235b-a22b": {
+    "performance": {
+      "coding": 0.90, "reasoning": 0.92, "mathematics": 0.91,
+      "creative_writing": 0.85, "instruction_following": 0.90,
+      "long_context": 0.88, "json_reliability": 0.90,
+      "vision_understanding": 0.10, "audio_understanding": 0.10,
+      "ocr": 0.10, "document_qa": 0.82, "summarization": 0.86,
+      "translation": 0.92, "table_understanding": 0.82,
+      "agentic_tasks": 0.85, "scientific_reasoning": 0.90,
+      "spreadsheet_reasoning": 0.80
+    },
+    "domains": {
+      "general": 0.90, "software": 0.90, "legal": 0.78, "medical": 0.76,
+      "finance": 0.80, "science": 0.90, "education": 0.88,
+      "customer_support": 0.85, "research": 0.88, "mathematics": 0.91
+    }
+  },
+  "qwen/qwen3-30b-a3b": {
+    "performance": {
+      "coding": 0.78, "reasoning": 0.80, "mathematics": 0.78,
+      "creative_writing": 0.75, "instruction_following": 0.82,
+      "long_context": 0.75, "json_reliability": 0.85,
+      "vision_understanding": 0.10, "audio_understanding": 0.10,
+      "ocr": 0.10, "document_qa": 0.72, "summarization": 0.76,
+      "translation": 0.82, "table_understanding": 0.70,
+      "agentic_tasks": 0.72, "scientific_reasoning": 0.78,
+      "spreadsheet_reasoning": 0.68
+    },
+    "domains": {
+      "general": 0.80, "software": 0.78, "legal": 0.65, "medical": 0.62,
+      "finance": 0.68, "science": 0.78, "education": 0.78,
+      "customer_support": 0.76, "research": 0.76, "mathematics": 0.78
+    }
+  },
+  "cohere/command-a": {
+    "performance": {
+      "coding": 0.82, "reasoning": 0.80, "mathematics": 0.72,
+      "creative_writing": 0.78, "instruction_following": 0.88,
+      "long_context": 0.85, "json_reliability": 0.92,
+      "vision_understanding": 0.10, "audio_understanding": 0.10,
+      "ocr": 0.10, "document_qa": 0.82, "summarization": 0.85,
+      "translation": 0.82, "table_understanding": 0.78,
+      "agentic_tasks": 0.85, "scientific_reasoning": 0.78,
+      "spreadsheet_reasoning": 0.75
+    },
+    "domains": {
+      "general": 0.85, "software": 0.82, "legal": 0.75, "medical": 0.70,
+      "finance": 0.75, "science": 0.78, "education": 0.83,
+      "customer_support": 0.88, "research": 0.82, "mathematics": 0.72
+    }
+  },
+  "google/gemma-3-27b-it": {
+    "performance": {
+      "coding": 0.72, "reasoning": 0.70, "mathematics": 0.65,
+      "creative_writing": 0.70, "instruction_following": 0.76,
+      "long_context": 0.68, "json_reliability": 0.80,
+      "vision_understanding": 0.68, "audio_understanding": 0.10,
+      "ocr": 0.62, "document_qa": 0.68, "summarization": 0.72,
+      "translation": 0.72, "table_understanding": 0.64,
+      "agentic_tasks": 0.60, "scientific_reasoning": 0.66,
+      "spreadsheet_reasoning": 0.60
+    },
+    "domains": {
+      "general": 0.75, "software": 0.72, "legal": 0.58, "medical": 0.56,
+      "finance": 0.60, "science": 0.66, "education": 0.74,
+      "customer_support": 0.76, "research": 0.68, "mathematics": 0.65
+    }
+  },
+  "microsoft/phi-4": {
+    "performance": {
+      "coding": 0.75, "reasoning": 0.78, "mathematics": 0.80,
+      "creative_writing": 0.68, "instruction_following": 0.78,
+      "long_context": 0.65, "json_reliability": 0.82,
+      "vision_understanding": 0.10, "audio_understanding": 0.10,
+      "ocr": 0.10, "document_qa": 0.65, "summarization": 0.70,
+      "translation": 0.65, "table_understanding": 0.68,
+      "agentic_tasks": 0.62, "scientific_reasoning": 0.78,
+      "spreadsheet_reasoning": 0.65
+    },
+    "domains": {
+      "general": 0.76, "software": 0.75, "legal": 0.58, "medical": 0.60,
+      "finance": 0.62, "science": 0.78, "education": 0.76,
+      "customer_support": 0.70, "research": 0.72, "mathematics": 0.80
+    }
+  },
+  "perplexity/sonar-pro": {
+    "performance": {
+      "coding": 0.72, "reasoning": 0.78, "mathematics": 0.68,
+      "creative_writing": 0.70, "instruction_following": 0.82,
+      "long_context": 0.80, "json_reliability": 0.85,
+      "vision_understanding": 0.10, "audio_understanding": 0.10,
+      "ocr": 0.10, "document_qa": 0.82, "summarization": 0.85,
+      "translation": 0.72, "table_understanding": 0.70,
+      "agentic_tasks": 0.75, "scientific_reasoning": 0.78,
+      "spreadsheet_reasoning": 0.65
+    },
+    "domains": {
+      "general": 0.85, "software": 0.72, "legal": 0.72, "medical": 0.75,
+      "finance": 0.75, "science": 0.80, "education": 0.82,
+      "customer_support": 0.78, "research": 0.90, "mathematics": 0.68
+    }
+  },
+  "openai/gpt-3.5-turbo": {
+    "performance": {
+      "coding": 0.60, "reasoning": 0.55, "mathematics": 0.50,
+      "creative_writing": 0.65, "instruction_following": 0.72,
+      "long_context": 0.45, "json_reliability": 0.78,
+      "vision_understanding": 0.10, "audio_understanding": 0.10,
+      "ocr": 0.10, "document_qa": 0.50, "summarization": 0.62,
+      "translation": 0.60, "table_understanding": 0.48,
+      "agentic_tasks": 0.40, "scientific_reasoning": 0.48,
+      "spreadsheet_reasoning": 0.45
+    },
+    "domains": {
+      "general": 0.68, "software": 0.60, "legal": 0.45, "medical": 0.42,
+      "finance": 0.48, "science": 0.50, "education": 0.65,
+      "customer_support": 0.70, "research": 0.52, "mathematics": 0.50
+    }
+  }
+}
