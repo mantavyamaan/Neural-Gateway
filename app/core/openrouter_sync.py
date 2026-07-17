@@ -53,9 +53,12 @@ def map_model_to_registry(or_model: Dict[str, Any]) -> Dict[str, Any]:
     name = parts[-1] if len(parts) > 1 else full_id
 
     tier = _classify_tier(name)
-    perf = _build_performance(name, provider, tier)
-    domains = _build_domains(provider, name, tier)
     
+    benchmarks = or_model.get("benchmarks") or {}
+    aa_data = benchmarks.get("artificial_analysis") or {}
+    
+    perf = _build_performance(name, provider, tier, aa_data)
+    domains = _build_domains(provider, name, tier, perf)
 
     
     # Calculate pricing (OpenRouter provides per-token cost, we need per-million)

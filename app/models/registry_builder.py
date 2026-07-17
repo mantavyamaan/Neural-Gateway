@@ -165,24 +165,28 @@ def _context_window_for_tier(tier: str) -> int:
     return 8_000
 
 
-def _build_performance(name: str, provider: str, tier: str) -> Dict[str, float]:
+def _build_performance(name: str, provider: str, tier: str, aa_data: Dict[str, Any] = None) -> Dict[str, float]:
     base = _base_quality_for_tier(tier)
     low = name.lower()
     perf = {}
     for key in PERF_KEYS:
         perf[key] = round(min(max(base, 0.05), 0.99), 3)
-    # Specialization boosts by name/provider hints.
-    if any(h in low for h in ["coder", "codestral", "code"]):
-        perf["coding"] = round(min(perf["coding"] + 0.15, 0.99), 3)
-    if provider == "Anthropic" or "claude" in low:
-        perf["instruction_following"] = round(min(perf["instruction_following"] + 0.08, 0.99), 3)
-        perf["long_context"] = round(min(perf["long_context"] + 0.06, 0.99), 3)
-    if provider == "OpenAI" and ("o3" in low or "o4" in low or "thinking" in low):
-        perf["reasoning"] = round(min(perf["reasoning"] + 0.15, 0.99), 3)
-        perf["mathematics"] = round(min(perf["mathematics"] + 0.12, 0.99), 3)
-    if "deepseek-r1" in low or provider == "DeepSeek":
-        perf["mathematics"] = round(min(perf["mathematics"] + 0.10, 0.99), 3)
-        perf["reasoning"] = round(min(perf["reasoning"] + 0.10, 0.99), 3)
+
+    # Use actual benchmark data if available from Artificial Analysis
+    if aa_data:
+        if aa_data.get("intelligence_index") is not None:
+            iq = aa_data["intelligence_index"] / 100.0
+            perf["reasoning"] = round(min(max(iq, 0.05), 0.99), 3)
+            perf["instruction_following"] = round(min(max(iq, 0.05), 0.99), 3)
+            perf["mathematics"] = round(min(max(iq, 0.05), 0.99), 3)
+        if aa_data.get("coding_index") is not None:
+            cq = aa_data["coding_index"] / 100.0
+            perf["coding"] = round(min(max(cq, 0.05), 0.99), 3)
+        if aa_data.get("agentic_index") is not None:
+            aq = aa_data["agentic_index"] / 100.0
+            perf["agentic_tasks"] = round(min(max(aq, 0.05), 0.99), 3)
+
+    # We still keep vision/audio hints because AA doesn't provide multimodal scores yet
     if any(h in low for h in VISION_HINTS):
         perf["vision_understanding"] = round(min(perf["vision_understanding"] + 0.10, 0.99), 3)
         perf["ocr"] = round(min(perf["ocr"] + 0.08, 0.99), 3)
@@ -215,7 +219,7 @@ def _build_benchmarks(base_perf: Dict[str, float]) -> Dict[str, float]:
     return out
 
 
-def _build_domains(provider: str, name: str, tier: str) -> Dict[str, float]:
+def _build_domains(provider: str, name: str, tier: str, perf: Dict[str, float] = None) -> Dict[str, float]:
     base = _base_quality_for_tier(tier)
     domains = {k: round(min(max(base, 0.05), 0.95), 3) for k in DOMAIN_KEYS}
     domains["general"] = round(min(base + 0.05, 0.97), 3)
@@ -223,12 +227,15 @@ def _build_domains(provider: str, name: str, tier: str) -> Dict[str, float]:
         for k in ("legal", "medical", "finance"):
             domains[k] = round(min(domains[k] + 0.08, 0.95), 3)
             
-    # Domain specific boosts
+    # Use real benchmark performance to seed domains when available
+    if perf:
+        if perf.get("coding"):
+            domains["software"] = round(min(max(perf["coding"], domains["software"]), 0.95), 3)
+        if perf.get("mathematics"):
+            domains["mathematics"] = round(min(max(perf["mathematics"], domains["mathematics"]), 0.95), 3)
+            
+    # Keep legacy hints for non-benched domains
     low = name.lower()
-    if any(h in low for h in ["coder", "codestral", "code"]):
-        domains["software"] = round(min(domains["software"] + 0.15, 0.95), 3)
-    if "math" in low or "r1" in low:
-        domains["mathematics"] = round(min(domains["mathematics"] + 0.12, 0.95), 3)
     if "med" in low or "health" in low:
         domains["medical"] = round(min(domains["medical"] + 0.12, 0.95), 3)
     if "law" in low or "legal" in low:
