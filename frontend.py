@@ -822,13 +822,8 @@ st.markdown("""
 # ─────────────────────────────────────────────────────────────────────────────
 with st.container():
     st.markdown("""
-    <div style="background:linear-gradient(145deg,rgba(22,27,34,0.9),rgba(13,17,23,0.95));
-    border:1px solid rgba(88,166,255,0.25); border-radius:18px; padding:26px 28px 16px 28px;
-    margin-bottom:20px; position:relative; overflow:hidden;">
-    <div style="position:absolute;top:0;left:0;right:0;height:1px;
-    background:linear-gradient(90deg,transparent,rgba(88,166,255,0.4),transparent);"></div>
-    <p style="font-weight:600; font-size:1rem; color:#e6edf3; margin:0 0 14px 0;">📝 Your Prompt</p>
-    </div>
+    <p style="font-size:0.82rem; font-weight:600; text-transform:uppercase; letter-spacing:1.8px;
+    color:#8b949e; margin:0 0 8px 0; font-family:'Inter',sans-serif;">📝 Your Prompt</p>
     """, unsafe_allow_html=True)
     prompt = st.text_area(
         label="Prompt",
