@@ -820,27 +820,32 @@ st.markdown("""
 # ─────────────────────────────────────────────────────────────────────────────
 # PROMPT INPUT AREA
 # ─────────────────────────────────────────────────────────────────────────────
-st.markdown('<div class="ng-card ng-card-accent">', unsafe_allow_html=True)
-st.markdown("##### 📝 Your Prompt", unsafe_allow_html=True)
-prompt = st.text_area(
-    label="prompt_area",
-    label_visibility="collapsed",
-    height=160,
-    placeholder="Describe your task — e.g. 'Implement a concurrent web crawler in Python with rate limiting, exponential backoff, and structured JSON output…'"
-)
-
-col_upload, col_btn = st.columns([3, 1])
-with col_upload:
-    uploaded_files = st.file_uploader(
-        "Attach files (PDF, images, Excel…)",
-        accept_multiple_files=True,
-        label_visibility="collapsed"
+with st.container():
+    st.markdown("""
+    <div style="background:linear-gradient(145deg,rgba(22,27,34,0.9),rgba(13,17,23,0.95));
+    border:1px solid rgba(88,166,255,0.25); border-radius:18px; padding:26px 28px 16px 28px;
+    margin-bottom:20px; position:relative; overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(88,166,255,0.4),transparent);"></div>
+    <p style="font-weight:600; font-size:1rem; color:#e6edf3; margin:0 0 14px 0;">📝 Your Prompt</p>
+    </div>
+    """, unsafe_allow_html=True)
+    prompt = st.text_area(
+        label="Prompt",
+        label_visibility="collapsed",
+        height=160,
+        placeholder="Describe your task — e.g. 'Implement a concurrent web crawler in Python with rate limiting, exponential backoff, and structured JSON output…'"
     )
-with col_btn:
-    st.markdown("<br>", unsafe_allow_html=True)
-    route_clicked = st.button("⚡ Route Request", type="primary", use_container_width=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
+    col_upload, col_btn = st.columns([3, 1])
+    with col_upload:
+        uploaded_files = st.file_uploader(
+            "Attach files",
+            accept_multiple_files=True,
+            label_visibility="collapsed"
+        )
+    with col_btn:
+        st.markdown("<br>", unsafe_allow_html=True)
+        route_clicked = st.button("⚡ Route Request", type="primary", use_container_width=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # ROUTING LOGIC
@@ -983,163 +988,154 @@ elif st.session_state.decision:
     left, right = st.columns([1.1, 1])
 
     with left:
-        st.markdown('<div class="ng-card">', unsafe_allow_html=True)
-        st.markdown("#### 🧠 Semantic Task Analysis")
-        st.markdown('<div class="ng-divider"></div>', unsafe_allow_html=True)
-
-        family    = task_summary.get("primary_family", "N/A")
-        domain    = task_summary.get("domain", "N/A")
+        family     = task_summary.get("primary_family", "N/A")
+        domain     = task_summary.get("domain", "N/A")
         complexity = task_summary.get("complexity", "N/A")
-        risk      = task_summary.get("risk_tier", "N/A")
-
+        risk       = task_summary.get("risk_tier", "N/A")
         complexity_style = COMPLEXITY_COLOR.get(complexity, "tag-blue")
         risk_style = RISK_COLOR.get(risk, "tag-blue")
-
+        fallbacks  = decision.get("fallback_models", [])
+        fallback_html = ""
+        if fallbacks:
+            pills = "".join(model_pill(f, fallback=True) for f in fallbacks)
+            fallback_html = f'<p style="color:#8b949e;font-size:0.78rem;text-transform:uppercase;letter-spacing:1.5px;margin-top:16px;margin-bottom:8px;font-weight:600;">Fallback Chain</p><div>{pills}</div>'
+        complexity_alert = ""
+        if complexity == "high":
+            complexity_alert = '<div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);border-radius:10px;padding:12px 16px;font-size:0.85rem;color:#a78bfa;margin-bottom:14px;">🧩 <strong>High-Complexity Task Detected</strong> — Router prioritized frontier reasoning models.</div>'
         st.markdown(f"""
-        <div style="margin-bottom: 18px;">
-            <p style="color:#8b949e; font-size:0.78rem; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; font-weight:600;">Task Classification</p>
-            {tag(family, "tag-blue")} {tag(domain, "tag-purple")}
-        </div>
-        <div style="margin-bottom: 18px;">
-            <p style="color:#8b949e; font-size:0.78rem; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:8px; font-weight:600;">Risk & Complexity</p>
-            {tag(f"Risk: {risk}", risk_style)} {tag(f"Complexity: {complexity}", complexity_style)}
+        <div class="ng-card">
+            <p style="font-weight:700;font-size:1rem;color:#e6edf3;margin:0 0 10px 0;">🧠 Semantic Task Analysis</p>
+            <div class="ng-divider"></div>
+            <div style="margin-bottom:18px;">
+                <p style="color:#8b949e;font-size:0.78rem;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;font-weight:600;">Task Classification</p>
+                {tag(family, "tag-blue")} {tag(domain, "tag-purple")}
+            </div>
+            <div style="margin-bottom:18px;">
+                <p style="color:#8b949e;font-size:0.78rem;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;font-weight:600;">Risk & Complexity</p>
+                {tag(f"Risk: {risk}", risk_style)} {tag(f"Complexity: {complexity}", complexity_style)}
+            </div>
+            {complexity_alert}
+            {fallback_html}
         </div>
         """, unsafe_allow_html=True)
-
-        # Alert for high complexity
-        if complexity == "high":
-            st.markdown("""
-            <div style="background:rgba(139,92,246,0.1); border:1px solid rgba(139,92,246,0.25); border-radius:10px; padding:12px 16px; font-size:0.85rem; color:#a78bfa; margin-bottom:14px;">
-                🧩 <strong>High-Complexity Task Detected</strong> — The router prioritized frontier reasoning models.
-            </div>
-            """, unsafe_allow_html=True)
-
-        # Fallback models
-        fallbacks = decision.get("fallback_models", [])
-        if fallbacks:
-            st.markdown('<p style="color:#8b949e; font-size:0.78rem; text-transform:uppercase; letter-spacing:1.5px; margin-top:16px; margin-bottom:8px; font-weight:600;">Fallback Chain</p>', unsafe_allow_html=True)
-            pills = "".join(model_pill(f, fallback=True) for f in fallbacks)
-            st.markdown(f'<div>{pills}</div>', unsafe_allow_html=True)
-
-        st.markdown('</div>', unsafe_allow_html=True)
 
     with right:
-        st.markdown('<div class="ng-card">', unsafe_allow_html=True)
-        st.markdown("#### 🔬 Pipeline Trace")
-        st.markdown('<div class="ng-divider"></div>', unsafe_allow_html=True)
-
-        registry  = trace.get("registry_models", 0)
-        feasible  = trace.get("feasible_after_filter", 0)
-        policy    = trace.get("after_policy", 0)
-        pareto    = trace.get("after_pareto", 0)
-
+        registry = trace.get("registry_models", 0)
+        feasible = trace.get("feasible_after_filter", 0)
+        policy   = trace.get("after_policy", 0)
+        pareto   = trace.get("after_pareto", 0)
         st.markdown(f"""
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:6px;">
-            <div style="background:rgba(22,27,34,0.8); border:1px solid rgba(48,54,61,0.6); border-radius:12px; padding:14px;">
-                <div style="font-size:0.7rem; color:#8b949e; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px; font-weight:600;">Registry</div>
-                <div style="font-family:'Outfit',sans-serif; font-size:1.8rem; font-weight:700; color:#e6edf3;">{registry}</div>
-            </div>
-            <div style="background:rgba(22,27,34,0.8); border:1px solid rgba(48,54,61,0.6); border-radius:12px; padding:14px;">
-                <div style="font-size:0.7rem; color:#8b949e; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px; font-weight:600;">Feasible</div>
-                <div style="font-family:'Outfit',sans-serif; font-size:1.8rem; font-weight:700; color:#58a6ff;">{feasible}</div>
-            </div>
-            <div style="background:rgba(22,27,34,0.8); border:1px solid rgba(48,54,61,0.6); border-radius:12px; padding:14px;">
-                <div style="font-size:0.7rem; color:#8b949e; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px; font-weight:600;">After Policy</div>
-                <div style="font-family:'Outfit',sans-serif; font-size:1.8rem; font-weight:700; color:#a78bfa;">{policy}</div>
-            </div>
-            <div style="background:rgba(22,27,34,0.8); border:1px solid rgba(48,54,61,0.6); border-radius:12px; padding:14px;">
-                <div style="font-size:0.7rem; color:#8b949e; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px; font-weight:600;">Pareto Frontier</div>
-                <div style="font-family:'Outfit',sans-serif; font-size:1.8rem; font-weight:700; color:#4ade80;">{pareto}</div>
+        <div class="ng-card">
+            <p style="font-weight:700;font-size:1rem;color:#e6edf3;margin:0 0 10px 0;">🔬 Pipeline Trace</p>
+            <div class="ng-divider"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div style="background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.6);border-radius:12px;padding:14px;">
+                    <div style="font-size:0.7rem;color:#8b949e;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;font-weight:600;">Registry</div>
+                    <div style="font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:700;color:#e6edf3;">{registry}</div>
+                </div>
+                <div style="background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.6);border-radius:12px;padding:14px;">
+                    <div style="font-size:0.7rem;color:#8b949e;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;font-weight:600;">Feasible</div>
+                    <div style="font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:700;color:#58a6ff;">{feasible}</div>
+                </div>
+                <div style="background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.6);border-radius:12px;padding:14px;">
+                    <div style="font-size:0.7rem;color:#8b949e;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;font-weight:600;">After Policy</div>
+                    <div style="font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:700;color:#a78bfa;">{policy}</div>
+                </div>
+                <div style="background:rgba(22,27,34,0.8);border:1px solid rgba(48,54,61,0.6);border-radius:12px;padding:14px;">
+                    <div style="font-size:0.7rem;color:#8b949e;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;font-weight:600;">Pareto Frontier</div>
+                    <div style="font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:700;color:#4ade80;">{pareto}</div>
+                </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
-
-        st.markdown('</div>', unsafe_allow_html=True)
 
     # ── Quality Breakdown ──
     q = decision.get("explanation", {}).get("quality_breakdown", {})
     if q:
-        st.markdown('<div class="ng-card">', unsafe_allow_html=True)
-        st.markdown("#### 📈 Quality Score Breakdown")
-        st.markdown('<div class="ng-divider"></div>', unsafe_allow_html=True)
-
-        ql, qr = st.columns(2)
+        def _pbar(label, val):
+            pct = min(max(float(val), 0.0), 1.0)
+            color = "#58a6ff" if pct > 0.65 else ("#fb923c" if pct > 0.4 else "#f87171")
+            return f"""
+            <div class="progress-row">
+                <div class="progress-label-row">
+                    <span class="progress-label">{label}</span>
+                    <span class="progress-value">{pct*100:.1f}%</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" style="width:{pct*100:.1f}%;background:linear-gradient(90deg,{color}cc,{color});"></div>
+                </div>
+            </div>"""
         items = [
-            ("Contextual Fit",       q.get("contextual_mean", 0)),
-            ("Workflow Fit",         q.get("workflow_fit", 0)),
-            ("Domain Fit",           q.get("domain_fit", 0)),
-            ("Runtime Adjusted Mean",q.get("runtime_adjusted_mean", 0)),
+            ("Contextual Fit",        q.get("contextual_mean", 0)),
+            ("Workflow Fit",          q.get("workflow_fit", 0)),
+            ("Domain Fit",            q.get("domain_fit", 0)),
+            ("Runtime Adjusted Mean", q.get("runtime_adjusted_mean", 0)),
         ]
-        for i, (label, val) in enumerate(items):
-            with (ql if i % 2 == 0 else qr):
-                render_progress_bar(label, val)
-
-        st.markdown('</div>', unsafe_allow_html=True)
+        left_bars  = _pbar(items[0][0], items[0][1]) + _pbar(items[2][0], items[2][1])
+        right_bars = _pbar(items[1][0], items[1][1]) + _pbar(items[3][0], items[3][1])
+        st.markdown(f"""
+        <div class="ng-card">
+            <p style="font-weight:700;font-size:1rem;color:#e6edf3;margin:0 0 10px 0;">📈 Quality Score Breakdown</p>
+            <div class="ng-divider"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+                <div>{left_bars}</div>
+                <div>{right_bars}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
     # ── Raw JSON ──
     with st.expander("🔍 View Raw JSON Response"):
         st.json(st.session_state.raw_data)
 
     # ── Train the Engine ──
-    st.markdown('<div class="ng-card">', unsafe_allow_html=True)
-    st.markdown("#### 🎓 Correct the Semantic Parser")
     st.markdown("""
-    <div class="feedback-note">
-        If the router misclassified your task, submit the correct labels here.
-        The KNN memory matrix will be instantly rebuilt with your correction.
+    <div class="ng-card">
+        <p style="font-weight:700;font-size:1rem;color:#e6edf3;margin:0 0 10px 0;">🎓 Correct the Semantic Parser</p>
+        <div class="ng-divider"></div>
+        <div class="feedback-note">If the router misclassified your task, submit the correct labels here. The KNN memory matrix will be instantly rebuilt with your correction.</div>
     </div>
-    <br>
     """, unsafe_allow_html=True)
-
-    fb1, fb2, fb3, fb4, fb5 = st.columns([2, 2, 2, 2, 1.5])
-    with fb1:
-        correct_family = st.selectbox("Primary Family", options=FAMILIES, key="feedback_family")
-    with fb2:
-        correct_domain = st.selectbox("Domain", options=DOMAINS, key="feedback_domain")
-    with fb3:
-        correct_risk = st.selectbox("Risk Tier", options=RISKS, key="feedback_risk")
-    with fb4:
-        correct_complexity = st.selectbox("Complexity", options=COMPLEXITIES, key="feedback_complexity")
-    with fb5:
-        st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("Submit Feedback", use_container_width=True):
-            try:
-                r = requests.post(f"{API_URL}/train_parser", json={
-                    "prompt":         st.session_state.prompt,
-                    "primary_family": correct_family,
-                    "domain":         correct_domain,
-                    "risk_tier":      correct_risk,
-                    "complexity":     correct_complexity,
-                })
-                if r.status_code == 200:
-                    st.toast("✅ Training example submitted — engine updated!", icon="🎉")
-                    st.balloons()
-                else:
-                    st.error("Failed to submit feedback.")
-            except Exception as e:
-                st.error(f"Error: {e}")
-
-    st.markdown('</div>', unsafe_allow_html=True)
+    with st.container():
+        fb1, fb2, fb3, fb4, fb5 = st.columns([2, 2, 2, 2, 1.5])
+        with fb1:
+            correct_family = st.selectbox("Primary Family", options=FAMILIES, key="feedback_family")
+        with fb2:
+            correct_domain = st.selectbox("Domain", options=DOMAINS, key="feedback_domain")
+        with fb3:
+            correct_risk = st.selectbox("Risk Tier", options=RISKS, key="feedback_risk")
+        with fb4:
+            correct_complexity = st.selectbox("Complexity", options=COMPLEXITIES, key="feedback_complexity")
+        with fb5:
+            st.markdown("<br>", unsafe_allow_html=True)
+            if st.button("Submit Feedback", use_container_width=True):
+                try:
+                    r = requests.post(f"{API_URL}/train_parser", json={
+                        "prompt":         st.session_state.prompt,
+                        "primary_family": correct_family,
+                        "domain":         correct_domain,
+                        "risk_tier":      correct_risk,
+                        "complexity":     correct_complexity,
+                    })
+                    if r.status_code == 200:
+                        st.toast("✅ Training example submitted — engine updated!", icon="🎉")
+                        st.balloons()
+                    else:
+                        st.error("Failed to submit feedback.")
+                except Exception as e:
+                    st.error(f"Error: {e}")
 
     # ── Stage 2: LLM Execution ──
-    st.markdown('<div class="ng-card">', unsafe_allow_html=True)
-    st.markdown("#### ⚡ Stage 2 — Generate Response")
-    st.markdown("""
-    <div class="feedback-note">
-        Execute the routed request directly via OpenRouter using the selected model.
-        Enter your API key in the sidebar to enable this.
-    </div>
-    <br>
-    """, unsafe_allow_html=True)
-
     selected_model_id = decision.get("selected_model", "")
-    if selected_model_id:
-        st.markdown(f"""
-        <p style="color:#8b949e; font-size:0.9rem; margin-bottom:16px;">
-            Will execute using:
-            <span class="model-pill" style="display:inline-flex; margin-left:4px;">⚡ {selected_model_id.split("/")[-1]}</span>
-        </p>
-        """, unsafe_allow_html=True)
+    model_pill_html = f'<span class="model-pill" style="display:inline-flex;margin-left:4px;">⚡ {selected_model_id.split("/")[-1]}</span>' if selected_model_id else ""
+    st.markdown(f"""
+    <div class="ng-card">
+        <p style="font-weight:700;font-size:1rem;color:#e6edf3;margin:0 0 10px 0;">⚡ Stage 2 — Generate Response</p>
+        <div class="ng-divider"></div>
+        <div class="feedback-note">Execute the routed request directly via OpenRouter using the selected model. Enter your API key in the sidebar to enable this.</div>
+        <p style="color:#8b949e;font-size:0.9rem;margin:14px 0 0 0;">Will execute using: {model_pill_html}</p>
+    </div>
+    """, unsafe_allow_html=True)
 
     gen_clicked = st.button("🚀 Generate with Selected Model", use_container_width=True)
 
@@ -1151,7 +1147,7 @@ elif st.session_state.decision:
             response_placeholder = st.empty()
             full_response = ""
 
-            with st.spinner(f"🤖 Generating with `{selected_model_id}`…"):
+            with st.spinner(f"Generating with {selected_model_id}…"):
                 try:
                     completion = client.chat.completions.create(
                         model=selected_model_id,
@@ -1167,7 +1163,6 @@ elif st.session_state.decision:
                                 unsafe_allow_html=True
                             )
 
-                    # Auto-render image URLs
                     if re.match(r"^https?://[^\s]+$", full_response.strip()):
                         full_response = f"![Generated Image]({full_response.strip()})"
                         response_placeholder.markdown(full_response)
@@ -1176,10 +1171,7 @@ elif st.session_state.decision:
                             f'<div class="llm-output">{full_response}</div>',
                             unsafe_allow_html=True
                         )
-
                     st.markdown('<div class="status-banner status-success">✅ Generation complete.</div>', unsafe_allow_html=True)
 
                 except Exception as e:
                     st.markdown(f'<div class="status-banner status-error">❌ Execution failed: {str(e)}</div>', unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
