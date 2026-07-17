@@ -11,7 +11,7 @@ load_dotenv()
 
 # Page Config must be the first Streamlit command
 st.set_page_config(
-    page_title="ATLAS Neural Gateway | Intelligent Gateway",
+    page_title="Neural Gateway | Intelligent Gateway",
     page_icon="🌌",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -215,7 +215,7 @@ div[data-baseweb="select"] > div::-webkit-scrollbar {
 </style>
 """, unsafe_allow_html=True)
 
-API_URL = os.getenv("ATLAS_API_URL", "http://127.0.0.1:8000").rstrip("/")
+API_URL = os.getenv("NEURAL_GATEWAY_API_URL", "http://127.0.0.1:8000").rstrip("/")
 
 @st.cache_data(ttl=300)
 def fetch_available_models():
@@ -235,7 +235,7 @@ def fetch_available_models():
 
 available_models, provider_map = fetch_available_models()
 
-st.title("🌌 ATLAS Neural Gateway")
+st.title("🌌 Neural Gateway")
 st.markdown("<p style='color: #a0a0a0; font-size: 1.1rem; margin-top: -10px; margin-bottom: 2rem;'>Enterprise-grade AI Routing Gateway</p>", unsafe_allow_html=True)
 
 # --- Sidebar Configuration ---
@@ -344,7 +344,7 @@ if st.button("🚀 Route Request"):
                 saved_file_paths.append(file_path)
             payload["files"] = saved_file_paths
         
-        with st.spinner("ATLAS Neural Gateway is analyzing complexity and scoring models..."):
+        with st.spinner("Neural Gateway is analyzing complexity and scoring models..."):
             start_time = time.time()
             try:
                 resp = requests.post(f"{API_URL}/route", json=payload, timeout=60.0)

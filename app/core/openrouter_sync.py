@@ -21,10 +21,9 @@ from app.models.registry_builder import (
     _build_safety,
     _routing_meta,
     _build_verifier_fit,
-    _build_verifier_fit,
 )
 
-logger = logging.getLogger("atlas.openrouter_sync")
+logger = logging.getLogger("neural_gateway.openrouter_sync")
 
 
 def _calculate_relative_cost(input_cost: float, output_cost: float) -> float:
@@ -34,7 +33,7 @@ def _calculate_relative_cost(input_cost: float, output_cost: float) -> float:
 
 
 def fetch_openrouter_models() -> List[Dict[str, Any]]:
-    """Fetch live models from OpenRouter and map them to ATLAS schema."""
+    """Fetch live models from OpenRouter and map them to Neural Gateway schema."""
     url = "https://openrouter.ai/api/v1/models"
     try:
         req = urllib.request.urlopen(url, timeout=10)
@@ -46,7 +45,7 @@ def fetch_openrouter_models() -> List[Dict[str, Any]]:
 
 
 def map_model_to_registry(or_model: Dict[str, Any]) -> Dict[str, Any]:
-    """Map an OpenRouter model dictionary to the ATLAS registry schema."""
+    """Map an OpenRouter model dictionary to the Neural Gateway registry schema."""
     # Handle id format: "openai/gpt-4o"
     full_id = or_model.get("id", "")
     parts = full_id.split("/")
@@ -78,9 +77,6 @@ def map_model_to_registry(or_model: Dict[str, Any]) -> Dict[str, Any]:
         "tier": tier,
         "status": "active",
         "api_available": True,
-        "evidence": {
-            "eligible_for_auto_route": False
-        },
         "open_weight": _is_open_weight(provider, name),
         "allowed_regions": ["global"],
         "modalities": _build_modalities(name, tier),
@@ -130,7 +126,7 @@ def sync_openrouter_models() -> None:
     updated_models = []
     for or_model in or_models:
         model_id = or_model.get("id", "")
-        # ATLAS Neural Gateway should route to base models, not other meta-routers
+        # Neural Gateway should route to base models, not other meta-routers
         if model_id.startswith("openrouter/"):
             continue
             
@@ -157,4 +153,4 @@ def sync_openrouter_models() -> None:
     except Exception as bench_exc:
         logger.warning(f"Benchmark sync failed (non-critical): {bench_exc}")
 
-    logger.info(f"Successfully seeded database with {len(or_models)} live models from OpenRouter.")
+    logger.info(f"Successfully synced {len(updated_models)} models to database ({len(or_models)} raw fetched from OpenRouter).")

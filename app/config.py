@@ -1,5 +1,5 @@
 """
-ATLAS Neural Gateway — system constants and versioning.
+Neural Gateway — system constants and versioning.
 
 Every production routing system must be reproducible under audit. Each
 independently-evolving component carries its own version stamp so that a
@@ -21,7 +21,7 @@ from typing import List, Optional
 from dotenv import load_dotenv
 
 # Populate os.environ from the project's .env file (repo root) so that
-# ATLAS_ALLOWED_PROVIDERS / other config vars edited there are picked up
+# NEURAL_GATEWAY_ALLOWED_PROVIDERS / other config vars edited there are picked up
 # without needing to `export` them in the shell. Values already set in
 # the process environment win over the file, matching dotenv's default.
 load_dotenv()
@@ -41,11 +41,11 @@ def _parse_provider_env(raw: Optional[str]) -> Optional[List[str]]:
 # router then only selects models (primary + fallbacks + verifiers) from that
 # subset. Leave unset for the full multi-provider behavior.
 DEFAULT_ALLOWED_PROVIDERS: Optional[List[str]] = _parse_provider_env(
-    os.getenv("ATLAS_ALLOWED_PROVIDERS")
+    os.getenv("NEURAL_GATEWAY_ALLOWED_PROVIDERS")
 )
 
 
-ROUTER_VERSION = "atlas-router-v1.0.0"
+ROUTER_VERSION = "neural_gateway-router-v1.0.0"
 PARSER_VERSION = "parser-v1.0.0"
 POLICY_VERSION = "policy-v1.0.0"
 SCORING_VERSION = "scoring-v1.0.0"
@@ -65,8 +65,8 @@ SUPPORTED_FORMATS = [
 # The default ABSTAIN threshold (0.40) assumes a multi-provider registry
 # where the top model naturally wins a large share of Thompson-Sampling
 # simulations. Narrower candidate pools (e.g. single-provider setups via
-# ATLAS_ALLOWED_PROVIDERS) produce lower peak confidences because models
-# within one family score similarly — set ATLAS_ABSTAIN_THRESHOLD=0.30
+# NEURAL_GATEWAY_ALLOWED_PROVIDERS) produce lower peak confidences because models
+# within one family score similarly — set NEURAL_GATEWAY_ABSTAIN_THRESHOLD=0.30
 # (or lower) to keep the router from abstaining on those.
 def _float_env(name: str, default: float) -> float:
     raw = os.getenv(name)
@@ -85,35 +85,35 @@ def _bool_env(name: str, default: bool) -> bool:
     return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
-CONFIDENCE_ABSTAIN_THRESHOLD = _float_env("ATLAS_ABSTAIN_THRESHOLD", 0.40)
-CONFIDENCE_ESCALATE_THRESHOLD = _float_env("ATLAS_ESCALATE_THRESHOLD", 0.55)
-CONFIDENCE_HIGH_THRESHOLD = _float_env("ATLAS_HIGH_THRESHOLD", 0.75)
-PARSER_ESCALATE_THRESHOLD = _float_env("ATLAS_PARSER_ESCALATE_THRESHOLD", 0.65)
+CONFIDENCE_ABSTAIN_THRESHOLD = _float_env("NEURAL_GATEWAY_ABSTAIN_THRESHOLD", 0.40)
+CONFIDENCE_ESCALATE_THRESHOLD = _float_env("NEURAL_GATEWAY_ESCALATE_THRESHOLD", 0.55)
+CONFIDENCE_HIGH_THRESHOLD = _float_env("NEURAL_GATEWAY_HIGH_THRESHOLD", 0.75)
+PARSER_ESCALATE_THRESHOLD = _float_env("NEURAL_GATEWAY_PARSER_ESCALATE_THRESHOLD", 0.65)
 
 # Safe-by-default production behaviour. Entries derived only from name-based
 # heuristics are useful for local demos, but must never be presented as an
 # evidence-based automatic production choice.
-REQUIRE_MEASURED_EVIDENCE = _bool_env("ATLAS_REQUIRE_MEASURED_EVIDENCE", True)
-ALLOW_SERVER_FILE_PATHS = _bool_env("ATLAS_ALLOW_SERVER_FILE_PATHS", True)
-ADMIN_API_KEY = os.getenv("ATLAS_ADMIN_API_KEY")
+REQUIRE_MEASURED_EVIDENCE = _bool_env("NEURAL_GATEWAY_REQUIRE_MEASURED_EVIDENCE", True)
+ALLOW_SERVER_FILE_PATHS = _bool_env("NEURAL_GATEWAY_ALLOW_SERVER_FILE_PATHS", True)
+ADMIN_API_KEY = os.getenv("NEURAL_GATEWAY_ADMIN_API_KEY")
 CORS_ORIGINS = [
     origin.strip() for origin in os.getenv(
-        "ATLAS_CORS_ORIGINS", "http://localhost:8501,http://127.0.0.1:8501"
+        "NEURAL_GATEWAY_CORS_ORIGINS", "http://localhost:8501,http://127.0.0.1:8501"
     ).split(",") if origin.strip()
 ]
 
 # Embedding model for the domain classifier (loaded once at import time
 # by app/core/domain_classifier.py). Any sentence-transformers-compatible
 # model works; default is a 384-dim MiniLM (~90MB, English-focused).
-ATLAS_EMBEDDING_MODEL = os.getenv("ATLAS_EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5")
+NEURAL_GATEWAY_EMBEDDING_MODEL = os.getenv("NEURAL_GATEWAY_EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5")
 
 # LLM tiebreaker: model used when the embedding classifier's cosine
 # similarity is below LEARNED_DOMAIN_CONFIDENCE_THRESHOLD on a text-only
 # prompt. Requires OPENAI_API_KEY. Set to "" (empty) to disable entirely.
-ATLAS_LLM_PARSER_MODEL = os.getenv("ATLAS_LLM_PARSER_MODEL", "gpt-4o-mini")
-LLM_PARSER_ENABLED = bool(os.getenv("OPENAI_API_KEY")) and bool(ATLAS_LLM_PARSER_MODEL)
+NEURAL_GATEWAY_LLM_PARSER_MODEL = os.getenv("NEURAL_GATEWAY_LLM_PARSER_MODEL", "gpt-4o-mini")
+LLM_PARSER_ENABLED = bool(os.getenv("OPENAI_API_KEY")) and bool(NEURAL_GATEWAY_LLM_PARSER_MODEL)
 
 # Primary LLM Parser Configuration (Ollama vs Cloud)
-ATLAS_PARSER_API_KEY = os.getenv("ATLAS_PARSER_API_KEY", "")
-ATLAS_PARSER_BASE_URL = os.getenv("ATLAS_PARSER_BASE_URL", "http://localhost:11434/v1")
-ATLAS_PARSER_MODEL_CLOUD = os.getenv("ATLAS_PARSER_MODEL", "llama3.1:latest")
+NEURAL_GATEWAY_PARSER_API_KEY = os.getenv("NEURAL_GATEWAY_PARSER_API_KEY", "")
+NEURAL_GATEWAY_PARSER_BASE_URL = os.getenv("NEURAL_GATEWAY_PARSER_BASE_URL", "http://localhost:11434/v1")
+NEURAL_GATEWAY_PARSER_MODEL_CLOUD = os.getenv("NEURAL_GATEWAY_PARSER_MODEL", "llama3.1:latest")

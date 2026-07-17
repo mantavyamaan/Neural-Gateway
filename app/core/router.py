@@ -1,5 +1,5 @@
 """
-ATLAS Neural Gateway — main orchestration.
+Neural Gateway — main orchestration.
 
 route() is the single entry point: it runs the full staged pipeline
 (parse -> feasibility -> policy -> Bayesian quality -> Pareto reduction ->
@@ -57,7 +57,7 @@ def route(
     registry: Optional[List[Dict[str, Any]]] = None,
     shadow_model: Optional[str] = None,
 ) -> RoutingDecision:
-    """Main entry point for the ATLAS Neural Gateway. Returns a complete RoutingDecision."""
+    """Main entry point for the Neural Gateway. Returns a complete RoutingDecision."""
     start_time = time.time()
     decision_id = str(uuid.uuid4())
     registry = registry if registry is not None else get_all_models()
@@ -132,7 +132,10 @@ def route(
     # ---- 6. Pareto reduction (with top-3 floor) ----
     frontier = pareto_frontier(enriched, eps=0.02)
     if len(frontier) < 3 and len(enriched) >= 3:
-        remaining = [m for m in enriched if m not in frontier]
+        # Use name-based lookup — avoids fragile dict identity comparison
+        # (compute_utilities does model.copy() so object identity may differ)
+        frontier_names = {m["name"] for m in frontier}
+        remaining = [m for m in enriched if m["name"] not in frontier_names]
         remaining.sort(key=lambda m: m["q"]["runtime_adjusted_mean"], reverse=True)
         frontier.extend(remaining[:3 - len(frontier)])
 
@@ -176,15 +179,23 @@ def route(
     is_json = task.requires_json
     cascade_strategy = None
     if task.complexity == "low" and task.risk_tier == "low" and (is_coding or is_json):
-        cascade_strategy = "ast_execution" if is_coding else "json_schema"
-        cheap_models = [m for m in all_scored if m["name"] in ["gemini-1.5-flash", "llama-3.1-8b-instant"]]
+        cheap_candidates = ["gemini-1.5-flash", "llama-3.1-8b-instant"]
+        cheap_models = [m for m in all_scored if any(c in m["name"] for c in cheap_candidates)]
         if cheap_models:
+            # Only set cascade when a cheap model actually exists in the registry
+            cascade_strategy = "ast_execution" if is_coding else "json_schema"
             primary_model = cheap_models[0]
-            selected_win_probability = 1.0
+            # Use actual Thompson win probability for the cheap model, not a hardcoded 1.0
+            # (fabricating 1.0 would bypass the abstention safety net entirely)
+            cheap_win_prob = confidence_data["win_probabilities"].get(primary_model["name"], selected_win_probability)
+            selected_win_probability = cheap_win_prob
             confidence_data["selected_model"] = primary_model["name"]
-            confidence_data["selected_confidence"] = 1.0
-            confidence_data["selected_margin"] = 1.0
-            fallback_models = [m for m in scored if m["name"] != primary_model["name"]][:3]
+            confidence_data["selected_confidence"] = cheap_win_prob
+            confidence_data["selected_margin"] = cheap_win_prob - max(
+                (p for n, p in confidence_data["win_probabilities"].items() if n != primary_model["name"]),
+                default=0.0
+            )
+            fallback_models = [m for m in all_scored if m["name"] != primary_model["name"]][:3]
 
     # ---- Verifier planning ----
     verifier_models = choose_verifier_models(
@@ -354,7 +365,7 @@ def route(
     decision_record["reproducibility_hash"] = hashlib.sha256(hash_input.encode()).hexdigest()[:24]
 
     return RoutingDecision(
-        selected_plan=plan,
+        selected_plan=plan if not abstain else None,  # never expose a plan when abstaining
         abstain=abstain,
         escalate_to_human=escalate,
         decision_record=decision_record,
@@ -423,3 +434,11 @@ def record_outcome(
                     g["alpha"] = max(g["alpha"] * 0.97, 1.0)
                     g["beta"] = max(g["beta"] * 0.97, 1.0)
             break
+    else:
+        # Loop completed without break — model not found in registry
+        import logging as _logging
+        _logging.getLogger("neural_gateway.router").warning(
+            f"record_outcome: model '{model_name}' not found in registry — "
+            "Bayesian prior NOT updated. Check that model names match the full "
+            "OpenRouter ID (e.g. 'openai/gpt-4o', not 'gpt-4o')."
+        )

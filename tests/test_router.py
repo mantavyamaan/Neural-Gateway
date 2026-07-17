@@ -1,5 +1,5 @@
 """
-End-to-end sanity tests for the ATLAS Neural Gateway pipeline, mirroring the
+End-to-end sanity tests for the Neural Gateway pipeline, mirroring the
 original notebook's demonstration scenarios.
 """
 

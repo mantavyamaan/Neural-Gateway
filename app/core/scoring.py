@@ -331,7 +331,7 @@ def pareto_vector(model: Dict[str, Any]) -> Tuple[float, float, float, float, fl
         -static_cost_score(model),
         static_latency_score(model),
         reliability_score(model),
-        runtime_health_score(model),
+        model["q"]["runtime_fit"],   # use cached value — avoids recomputing 8-component health score
     )
 
 
@@ -421,7 +421,7 @@ def compute_utilities(
             w["quality"] * q
             - w["uncertainty"] * u
             - w["cost"] * c
-            + w["latency"] * l
+            + w["latency"] * l        # latency_score: higher = faster, so ADD (good signal)
             + w["reliability"] * r
             + w["riskfit"] * rf
             + w["runtime"] * rt
@@ -475,7 +475,16 @@ def estimate_confidence(
 
     profile_name = choose_effective_profile(task, profile_name)
     w = WEIGHT_PROFILES[profile_name]
-    seed_str = ",".join(sorted(m.get("name", "") for m in models)) + task.primary_family
+    # Include primary_family AND domain AND a hash of the prompt so that
+    # different prompts with the same candidate model set produce different
+    # winners (avoids one model always winning on every request).
+    prompt_hash = hashlib.sha256(task.raw_prompt.encode()).hexdigest()[:12]
+    seed_str = (
+        ",".join(sorted(m.get("name", "") for m in models))
+        + task.primary_family
+        + task.domain
+        + prompt_hash
+    )
     seed = int(hashlib.sha256(seed_str.encode()).hexdigest()[:8], 16)
     rng = np.random.RandomState(seed)
     
@@ -484,31 +493,44 @@ def estimate_confidence(
     means = np.array([m["q"]["runtime_adjusted_mean"] for m in models])
     variances = np.array([max(m["q"]["family_variance"], 1e-4) for m in models])
     
-    # Vectorized bounded_beta_sample parameter calculation
+    # Vectorized mean-preserving method-of-moments for Beta parameters.
+    # Clamp variance to 99.9% of max theoretical variance to guarantee commons > 0
+    # and preserve the original mean exactly (no non-mean-preserving scaling).
     means = np.clip(means, 1e-6, 1.0 - 1e-6)
-    max_vars = np.maximum(means * (1.0 - means) - 1e-6, 1e-6)
+    max_vars = means * (1.0 - means) * 0.999   # strictly inside the valid range
     variances = np.clip(variances, 1e-6, max_vars)
     
     commons = (means * (1.0 - means) / variances) - 1.0
-    alphas = means * commons
-    betas = (1.0 - means) * commons
-    
-    # Scale parameters if less than 1.0 to avoid Beta(0,x) errors
-    scales = np.where((alphas < 1.0) | (betas < 1.0), 
-                      1.0 / np.maximum(np.minimum(alphas, betas), 1e-9), 
-                      1.0)
-    alphas *= scales
-    betas *= scales
+    commons = np.maximum(commons, 0.01)          # guarantee commons > 0 without scaling
+    alphas = np.maximum(means * commons, 1e-3)   # floor prevents Beta(0,x) errors
+    betas  = np.maximum((1.0 - means) * commons, 1e-3)
     
     # Sample matrix of shape (n_sim, n_models)
     sq_matrix = rng.beta(alphas, betas, size=(n_sim, n_models))
     
     base_utilities = np.array([m["u"]["expected_utility"] for m in models])
     
-    # Calculate matrix of utilities: shape (n_sim, n_models)
-    # utility = base_utility + w["quality"] * (sampled_q - expected_q)
-    utility_matrix = base_utilities + w["quality"] * (sq_matrix - means)
-    
+    # Retrieve normalised cost, latency, reliability, runtime per model so the
+    # full utility function is perturbed — not just the quality dimension.
+    n_costs = np.array([m["u"]["n_cost"] for m in models])
+    n_lats  = np.array([m["u"]["n_latency"] for m in models])
+    n_rels  = np.array([m["u"]["n_reliability"] for m in models])
+    n_rts   = np.array([m["u"]["n_runtime"] for m in models])
+
+    # Sample noise for cost, reliability and runtime (small std dev = mild perturbation)
+    cost_noise = rng.normal(0.0, 0.05, size=(n_sim, n_models))
+    rel_noise  = rng.normal(0.0, 0.04, size=(n_sim, n_models))
+    rt_noise   = rng.normal(0.0, 0.04, size=(n_sim, n_models))
+
+    # Full perturbed utility across all 7 dimensions
+    utility_matrix = (
+        base_utilities
+        + w["quality"]     * (sq_matrix - means)            # quality perturbation from beta sample
+        - w["cost"]        * np.clip(cost_noise, -0.2, 0.2) # cost uncertainty
+        + w["reliability"] * np.clip(rel_noise,  -0.2, 0.2) # reliability uncertainty
+        + w["runtime"]     * np.clip(rt_noise,   -0.2, 0.2) # runtime uncertainty
+    )
+
     # Find the indices of the maximum utilities for each simulation
     winners = np.argmax(utility_matrix, axis=1)
     

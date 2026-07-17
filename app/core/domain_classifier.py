@@ -79,11 +79,11 @@ def _load_model():
         logger.warning("fastembed unavailable; classifier disabled.")
         return None
 
-    from app.config import ATLAS_EMBEDDING_MODEL
+    from app.config import NEURAL_GATEWAY_EMBEDDING_MODEL
     try:
-        return TextEmbedding(model_name=ATLAS_EMBEDDING_MODEL)
+        return TextEmbedding(model_name=NEURAL_GATEWAY_EMBEDDING_MODEL)
     except Exception as exc:  # network / download / model load errors
-        logger.warning("Failed to load embedding model %s: %s", ATLAS_EMBEDDING_MODEL, exc)
+        logger.warning("Failed to load embedding model %s: %s", NEURAL_GATEWAY_EMBEDDING_MODEL, exc)
         return None
 
 

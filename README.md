@@ -1,11 +1,11 @@
-# ATLAS Neural Gateway
+﻿# Neural Gateway
 
-**Adaptive Task and LLM Allocation System** — a complete, end-to-end AI agent and neural routing gateway, exposed as a FastAPI service. ATLAS decides *which model or execution plan* should handle a request, taking into account task requirements, governance policy, runtime health, cost, latency, uncertainty, and SLAs. It then acts as an intelligent proxy to actively generate and stream the final response directly back to the user.
+**Adaptive Task and LLM Allocation System** — a complete, end-to-end AI agent and neural routing gateway, exposed as a FastAPI service. Neural Gateway decides *which model or execution plan* should handle a request, taking into account task requirements, governance policy, runtime health, cost, latency, uncertainty, and SLAs. It then acts as an intelligent proxy to actively generate and stream the final response directly back to the user.
 
 ## How it's organized
 
 ```
-atlas_neural_gateway/
+neural_gateway/
 ├── app/
 │   ├── main.py                 # FastAPI app entrypoint (uvicorn target)
 │   ├── config.py                # version stamps + confidence thresholds
@@ -35,7 +35,7 @@ atlas_neural_gateway/
 └── README.md
 ```
 
-This mirrors the routing pipeline described in the ATLAS design doc:
+This mirrors the routing pipeline described in the Neural Gateway design doc:
 
 ```
 Request -> Artifact Inspection -> Semantic Parsing -> Task Representation
@@ -60,7 +60,7 @@ audio/video duration if present on the host `PATH`.
 
 ## Prerequisites (ONNX & Vector Embeddings)
 
-ATLAS uses a high-precision K-Nearest Neighbors (KNN) Vector Embedding Engine powered by **BAAI/bge-large-en-v1.5** to semantically parse and categorize prompts before they are routed. 
+Neural Gateway uses a high-precision K-Nearest Neighbors (KNN) Vector Embedding Engine powered by **BAAI/bge-large-en-v1.5** to semantically parse and categorize prompts before they are routed.
 
 Because it uses `fastembed` (ONNX Runtime), it runs **entirely on the CPU** in under 70 milliseconds and requires zero GPU VRAM. It operates 100% locally and offline without any need for an Ollama server or PyTorch.
 
@@ -69,7 +69,7 @@ Because it uses `fastembed` (ONNX Runtime), it runs **entirely on the CPU** in u
 
 ## Run the Service & UI
 
-ATLAS now features a premium **Streamlit Frontend** with Glassmorphism design, Custom Model Allowlisting, and Stage 2 LLM execution (directly streaming responses from OpenRouter using the dynamically selected optimal model).
+Neural Gateway now features a premium **Streamlit Frontend** with Glassmorphism design, Custom Model Allowlisting, and Stage 2 LLM execution (directly streaming responses from OpenRouter using the dynamically selected optimal model).
 
 You need two terminals to run the full stack:
 
@@ -115,7 +115,7 @@ Response shape (abridged):
     "confidence": 0.61
   },
   "decision_record": { "...": "full auditable trace" },
-  "summary_text": "=== Atlas Router Decision === ..."
+  "summary_text": "=== Neural Gateway Router Decision === ..."
 }
 ```
 
@@ -136,17 +136,17 @@ Response shape (abridged):
 
 ## The Model Registry (Dynamic SQLite + OpenRouter)
 
-ATLAS uses a real-time, dynamic **SQLite database** to store its model registry, making it a production-ready routing engine.
+Neural Gateway uses a real-time, dynamic **SQLite database** to store its model registry, making it a production-ready routing engine.
 
 When the application starts, `app/core/openrouter_sync.py` connects to the **OpenRouter API** to download the latest available models, their exact context window limits, and live pricing.
 
-To ensure routing decisions are mathematically precise, it cross-references these models against `app/models/real_benchmarks.json`, which contains manually curated, **ground-truth benchmark scores** (like SWE-Bench and MMLU equivalents) for flagship models like GPT-4o, Claude 3.5 Sonnet, and Llama 3. 
+To ensure routing decisions are mathematically precise, it cross-references these models against `app/models/real_benchmarks.json`, which contains manually curated, **ground-truth benchmark scores** (like SWE-Bench and MMLU equivalents) for flagship models like GPT-4o, Claude 3.5 Sonnet, and Llama 3.
 
-For obscure community models that aren't mapped in our benchmark JSON, it explicitly defaults them to an "insufficient evidence" state. By default, `ATLAS_REQUIRE_MEASURED_EVIDENCE=true` prevents these unknown models from receiving auto-routed traffic unless the tenant overrides the behavior. Tests are also run deterministically to ensure the suite is blazingly fast and works entirely offline.
+For obscure community models that aren't mapped in our benchmark JSON, it explicitly defaults them to an "insufficient evidence" state. By default, `NEURAL_GATEWAY_REQUIRE_MEASURED_EVIDENCE=true` prevents these unknown models from receiving auto-routed traffic unless the tenant overrides the behavior. Tests are also run deterministically to ensure the suite is blazingly fast and works entirely offline.
 
 ## The Semantic Vector Parsing Engine
 
-By default, task understanding in ATLAS is handled by the **EmbeddingSemanticParser** in `app/core/embedding_parser.py`. It mathematically categorizes requests by computing the Dense Vector against three highly-trained **Logistic Regression Classifiers** and a local **Cross-Encoder** reranker.
+By default, task understanding in Neural Gateway is handled by the **EmbeddingSemanticParser** in `app/core/embedding_parser.py`. It mathematically categorizes requests by computing the Dense Vector against three highly-trained **Logistic Regression Classifiers** and a local **Cross-Encoder** reranker.
 
 * **Dynamic Training & CI Gate:** You can instantly make the Gateway smarter using the **Train the Engine** UI. When you submit a correction, the backend API (`/train_parser`) encodes your exact prompt into a new vector. Before saving it permanently, it runs a strict local Evaluation Suite. If the new vector degrades the matrix below 90% accuracy, it blocks the change and reverts the RAM matrix, ensuring poison-proof learning.
 * **Deterministic Safety Override Layer:** The system automatically escalates risky keywords (like "suicide" or "drop table") to High/Extreme risk tiers, strictly enforcing safety regardless of statistical voting.
@@ -159,16 +159,16 @@ pytest tests/ -v
 
 ## Production requirements
 
-ATLAS is a routing control plane, not a model executor. A production
+Neural Gateway is a routing control plane, not a model executor. A production
 deployment must invoke the selected plan in a separate execution service,
 verify outputs, and submit authenticated outcomes. Name-derived fallback
 scores are development fixtures only: with the default
-`ATLAS_REQUIRE_MEASURED_EVIDENCE=true`, models without curated benchmark or
+`NEURAL_GATEWAY_REQUIRE_MEASURED_EVIDENCE=true`, models without curated benchmark or
 measured production evidence are rejected before scoring. Populate the
 registry with versioned capability probes, task-family evaluations, and real
 provider telemetry before enabling automatic routing.
 
-Set `ATLAS_ADMIN_API_KEY` before enabling the mutable model and outcome
+Set `NEURAL_GATEWAY_ADMIN_API_KEY` before enabling the mutable model and outcome
 endpoints. Do not expose server-local `files` paths; use authenticated uploads
 or object-store references instead.
 

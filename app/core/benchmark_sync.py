@@ -1,7 +1,7 @@
 """
 Automated Benchmark Sync Pipeline.
 
-Fetches real-world performance scores for every model in the ATLAS registry
+Fetches real-world performance scores for every model in the Neural Gateway registry
 from two publicly accessible sources:
 
   1. OpenRouter Live API    -- pricing, context window, modality flags,
@@ -34,9 +34,9 @@ from typing import Any, Dict, List, Optional
 
 from app.core.database import bulk_upsert_models, get_all_models
 
-logger = logging.getLogger("atlas.benchmark_sync")
+logger = logging.getLogger("neural_gateway.benchmark_sync")
 
-ATLAS_PERF_KEYS = [
+NEURAL_GATEWAY_PERF_KEYS = [
     "coding", "agentic_tasks", "reasoning", "scientific_reasoning",
     "mathematics", "creative_writing", "instruction_following",
     "vision_understanding", "ocr", "table_understanding", "document_qa",
@@ -54,7 +54,7 @@ def _safe_get(url: str, timeout: int = 15) -> Optional[bytes]:
     """HTTP GET with error handling. Returns raw bytes or None."""
     try:
         req = urllib.request.Request(
-            url, headers={"User-Agent": "ATLAS-BenchmarkSync/1.0"},
+            url, headers={"User-Agent": "Neural Gateway-BenchmarkSync/1.0"},
         )
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.read()
@@ -167,7 +167,7 @@ def fetch_openrouter_signals() -> Dict[str, Dict[str, float]]:
 
 
 def _normalize_openrouter(raw: Dict[str, Dict[str, float]]) -> Dict[str, Dict[str, float]]:
-    """Convert raw OpenRouter signals into normalized ATLAS performance scores."""
+    """Convert raw OpenRouter signals into normalized Neural Gateway performance scores."""
     if not raw:
         return {}
 
@@ -247,9 +247,9 @@ def fetch_huggingface_tags(hf_ids: List[str]) -> Dict[str, Dict[str, float]]:
             tags.append(pipeline_tag)
         s: Dict[str, float] = {}
         for tag in tags:
-            atlas_key = HF_TAG_MAP.get((tag or "").lower().strip())
-            if atlas_key:
-                s[atlas_key] = 0.72
+            neural_gateway_key = HF_TAG_MAP.get((tag or "").lower().strip())
+            if neural_gateway_key:
+                s[neural_gateway_key] = 0.72
         if s:
             results[hf_id] = s
     if results:

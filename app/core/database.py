@@ -1,5 +1,5 @@
 """
-SQLite persistence layer for the ATLAS model registry.
+SQLite persistence layer for the Neural Gateway model registry.
 """
 
 import json
@@ -8,7 +8,7 @@ import sqlite3
 import threading
 from typing import Any, Dict, List, Optional
 
-DB_PATH = os.getenv("ATLAS_DB_PATH", "atlas_registry.db")
+DB_PATH = os.getenv("NEURAL_GATEWAY_DB_PATH", "neural_gateway_registry.db")
 
 _lock = threading.Lock()
 _local = threading.local()  # per-thread connection storage for true thread safety

@@ -55,7 +55,7 @@ _ALLOWED_OUTPUTS = ["free_text", "structured_json", "code"]
 _ALLOWED_ACTIONABILITY = ["advisory", "high"]
 
 _JSON_SCHEMA = {
-    "name": "atlas_semantic_parse",
+    "name": "neural_gateway_semantic_parse",
     "strict": True,
     "schema": {
         "type": "object",
@@ -104,11 +104,11 @@ def _call_openai_parser(
 ) -> StructuredSemanticParse:
     """Call gpt-4o-mini with structured outputs; return a StructuredSemanticParse."""
     from openai import OpenAI
-    from app.config import ATLAS_LLM_PARSER_MODEL
+    from app.config import NEURAL_GATEWAY_LLM_PARSER_MODEL
 
     client = OpenAI()
     completion = client.chat.completions.create(  # type: ignore[call-overload]
-        model=ATLAS_LLM_PARSER_MODEL,
+        model=NEURAL_GATEWAY_LLM_PARSER_MODEL,
         messages=[
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": prompt},

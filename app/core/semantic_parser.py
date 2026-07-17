@@ -67,8 +67,7 @@ def infer_complexity(prompt: str, estimated_tokens: int, semantic: StructuredSem
 
     p = prompt.lower()
     
-    # NEW Regex detection for magnitude and explicit advanced concepts
-    import re
+    # Regex detection for magnitude and explicit advanced concepts
     if re.search(r'\b\d+[- ]page(s)?\b', p) or re.search(r'\b\d+[- ]word(s)?\b', p) or re.search(r'\b(advanced|massive|huge|expert|in-depth)\b', p):
         return "high"
     high_signals = [
@@ -89,7 +88,11 @@ def infer_complexity(prompt: str, estimated_tokens: int, semantic: StructuredSem
     high_count = sum(signal in p for signal in high_signals)
     medium_count = sum(signal in p for signal in medium_signals)
     
-    if high_count >= 1 or (high_count and semantic.primary_family in {"coding", "agent", "reasoning"}):
+    # Fix: require 2 high signals normally, OR 1 signal if it's an inherently
+    # complex task family — the previous condition had a logically dead second
+    # clause (high_count >= 1 already covers high_count > 0, making the 'and'
+    # branch unreachable).
+    if high_count >= 2 or (high_count >= 1 and semantic.primary_family in {"coding", "agent", "reasoning"}):
         return "high"
     if medium_count >= 2 or semantic.decomposition_needed or len(prompt) > 200:
         return "medium"

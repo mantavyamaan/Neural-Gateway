@@ -77,7 +77,7 @@ def generate_training_data():
     return cases
 
 if __name__ == "__main__":
-    print("🚀 Initializing ATLAS Memory Bank...")
+    print("🚀 Initializing Neural Gateway Memory Bank...")
     init_db()
     
     print("🧠 Generating 1000 diverse real-world edge cases...")
@@ -92,5 +92,5 @@ if __name__ == "__main__":
         except Exception as e:
             pass
             
-    print(f"✅ Successfully trained ATLAS with {inserted} new edge cases!")
+    print(f"✅ Successfully trained Neural Gateway with {inserted} new edge cases!")
     print("The local LLM Parser will now dynamically sample from this memory bank on every request.")

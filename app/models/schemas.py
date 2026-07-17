@@ -1,5 +1,5 @@
 """
-Core data contracts used throughout the ATLAS routing pipeline.
+Core data contracts used throughout the Neural Gateway routing pipeline.
 
 These are plain dataclasses (not pydantic) because they flow through pure
 scoring/optimization code as well as the FastAPI layer. The API layer

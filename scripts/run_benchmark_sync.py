@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Standalone CLI to manually trigger a full benchmark sync for all ATLAS models.
+Standalone CLI to manually trigger a full benchmark sync for all Neural Gateway models.
 
 Usage:
     python scripts/run_benchmark_sync.py
@@ -8,7 +8,7 @@ Usage:
 This script:
   1. Fetches live scores from Artificial Analysis, LiveBench, HuggingFace.
   2. Normalizes all scores population-wide (no hardcoded ceilings).
-  3. Matches scores to every model in the ATLAS SQLite registry.
+  3. Matches scores to every model in the Neural Gateway SQLite registry.
   4. Unlocks all matched models (eligible_for_auto_route = True).
   5. Prints a final summary report.
 
@@ -33,7 +33,7 @@ from app.core.benchmark_sync import run_benchmark_sync
 
 def main() -> None:
     print("\n" + "=" * 60)
-    print("  ATLAS Automated Benchmark Sync")
+    print("  Neural Gateway Automated Benchmark Sync")
     print("  Zero hardcoding. Zero LLM judges. Pure leaderboard data.")
     print("=" * 60 + "\n")
 

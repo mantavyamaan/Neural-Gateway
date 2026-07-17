@@ -1,5 +1,5 @@
 """
-FastAPI routes exposing the ATLAS Neural Gateway as a service.
+FastAPI routes exposing the Neural Gateway as a service.
 
 Endpoints:
     POST /route          -> run the full routing pipeline, return a RoutingDecision
@@ -56,11 +56,11 @@ _write_lock = threading.Lock()
 _parser_lock = threading.Lock()
 
 
-def _require_admin(x_atlas_admin_key: Optional[str] = Header(default=None)) -> None:
+def _require_admin(x_neural_gateway_admin_key: Optional[str] = Header(default=None)) -> None:
     """Protect mutable control-plane endpoints with a configured secret."""
     if not ADMIN_API_KEY:
-        raise HTTPException(status_code=503, detail="Model mutation is disabled: ATLAS_ADMIN_API_KEY is not configured")
-    if x_atlas_admin_key != ADMIN_API_KEY:
+        raise HTTPException(status_code=503, detail="Model mutation is disabled: NEURAL_GATEWAY_ADMIN_API_KEY is not configured")
+    if x_neural_gateway_admin_key != ADMIN_API_KEY:
         raise HTTPException(status_code=401, detail="Invalid administrative API key")
 
 
@@ -69,7 +69,7 @@ def _to_request_constraints(rc_in: Optional[RequestConstraintsIn]) -> RequestCon
         rc = RequestConstraints()
     else:
         rc = RequestConstraints(**rc_in.model_dump())
-    # Apply the ATLAS_ALLOWED_PROVIDERS env-var default when the caller didn't
+    # Apply the NEURAL_GATEWAY_ALLOWED_PROVIDERS env-var default when the caller didn't
     # set its own filter. Per-request `allowed_providers` always wins.
     if rc.allowed_providers is None and DEFAULT_ALLOWED_PROVIDERS:
         rc.allowed_providers = list(DEFAULT_ALLOWED_PROVIDERS)
@@ -159,7 +159,7 @@ def route_request(payload: RouteRequest) -> RouteResponse:
     )
 
 
-@router.post("/execute", tags=["atlas-gateway"])
+@router.post("/execute", tags=["neural_gateway-gateway"])
 async def execute_route_proxy(payload: RouteRequest, x_openrouter_key: str = Header(...)):
     """Data Plane endpoint: Route the prompt AND execute the LLM inference against OpenRouter."""
     decision = await anyio.to_thread.run_sync(lambda: route(
@@ -187,7 +187,7 @@ async def execute_route_proxy(payload: RouteRequest, x_openrouter_key: str = Hea
                 "https://openrouter.ai/api/v1/chat/completions",
                 headers={
                     "Authorization": f"Bearer {x_openrouter_key}",
-                    "HTTP-Referer": "https://atlas-neural-gateway.local",
+                    "HTTP-Referer": "https://neural_gateway-neural-gateway.local",
                 },
                 json={
                     "model": model_name,
@@ -302,7 +302,7 @@ async def delete_model_route(name: str, _: None = Depends(_require_admin)) -> No
 async def health_check():
     return {"status": "ok", "registry_models": len(get_all_models())}
 
-@router.post("/train_parser", tags=["atlas-gateway"])
+@router.post("/train_parser", tags=["neural_gateway-gateway"])
 async def train_parser(payload: TrainParserRequest):
     try:
         from app.core.embedding_parser import get_parser, _cached_parse

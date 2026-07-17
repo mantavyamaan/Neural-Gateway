@@ -2,11 +2,11 @@
 import sys
 import os
 
-sys.path.append(r"C:\Users\manta\OneDrive\Desktop\atlas_neural_gateway")
+sys.path.append(r"C:\Users\manta\OneDrive\Desktop\neural_gateway")
 from app.core.embedding_parser import get_parser
 
 parser = get_parser()
-eval_file = r"C:\Users\manta\OneDrive\Desktop\atlas_neural_gateway\data\golden_eval.json"
+eval_file = r"C:\Users\manta\OneDrive\Desktop\neural_gateway\data\golden_eval.json"
 with open(eval_file, "r", encoding="utf-8") as f:
     prompts = json.load(f)
 

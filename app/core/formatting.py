@@ -6,7 +6,7 @@ from app.models.schemas import RoutingDecision
 def format_decision_summary(decision: RoutingDecision) -> str:
     lines = []
     rec = decision.decision_record
-    lines.append("=== ATLAS Neural Gateway Decision ===")
+    lines.append("=== Neural Gateway Decision ===")
     lines.append(f"Decision ID: {rec.get('decision_id', 'N/A')}")
     lines.append(f"Status: {str(rec.get('status', 'unknown')).upper()}")
     lines.append(f"Timestamp: {rec.get('timestamp_utc', 'N/A')}")

@@ -48,7 +48,7 @@ def generate_golden_eval():
         # Give random acceptable models
         p["acceptable_models"] = random.sample(models, k=random.randint(2, 4))
         
-    with open("C:/Users/manta/OneDrive/Desktop/atlas_neural_gateway/data/golden_eval.json", "w", encoding="utf-8") as f:
+    with open("C:/Users/manta/OneDrive/Desktop/neural_gateway/data/golden_eval.json", "w", encoding="utf-8") as f:
         json.dump(prompts, f, indent=2)
 
 if __name__ == "__main__":
