@@ -195,3 +195,4 @@ long-context research with citations, and file-driven conflict detection.
    summarization, etc. can be routed to different specialist models within
    one plan.
 8. **Mathematical Purity** — Cost/Latency are strictly enforced as absolute filters, ranking uses purely absolute scale utilities (no min-maxing), Bayesian priors never double count observations, and confidence scores explicitly distinguish between Thompson Sampling win-rates and actual predicted task success.
+
