@@ -6,7 +6,7 @@ Neural Gateway is a smart "traffic controller" for AI language models.
 
 Imagine you have access to many different AI models — GPT-4, Claude, a local LLaMA model, and so on. Each one has different strengths:
 
-- Some are very smart but expensive (like GPT-4 Turbo).
+- Some are very smart but expensive (like GPT-5.5).
 - Some are cheaper but less capable (like GPT-3.5).
 - Some are free but slow (like a local model running on your own computer).
 
