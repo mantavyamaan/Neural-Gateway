@@ -1,6 +1,6 @@
 # Neural Gateway
 
-> **🌐 [Try the Live Demo →](https://mantavyamaan.github.io/Neural-Gateway/demo)**
+> **[Try the Live Demo →](https://mantavyamaan.github.io/Neural-Gateway/demo)**
 
 It is a complete, end-to-end AI agent and neural routing gateway, exposed as a FastAPI service. Neural Gateway decides *which model or execution plan* should handle a request, taking into account task requirements, governance policy, runtime health, cost, latency, uncertainty, and SLAs. It then acts as an intelligent proxy to actively generate and stream the final response directly back to the user.
 
