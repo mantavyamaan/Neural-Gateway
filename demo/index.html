@@ -1182,6 +1182,15 @@ const MODELS = {
   ]
 };
 
+// Infer tokens_per_sec from TTFT tier (Economy=200, Mid=110, Frontier=60)
+// This keeps model data minimal while giving realistic generation-time estimates.
+Object.values(MODELS).flat().forEach(m => {
+  if (m.lat <= 600)       m.tps = 200;  // Economy / fast
+  else if (m.lat <= 1800) m.tps = 110;  // Mid tier
+  else                    m.tps = 55;   // Frontier / reasoning (slow streamer)
+});
+
+
 const FALLBACKS_MAP = {
   low:    ['meta-llama/llama-3.2-3b-instruct', 'google/gemini-2.5-flash'],
   medium: ['google/gemini-2.5-flash', 'meta-llama/llama-3.3-70b-instruct'],
@@ -1223,7 +1232,19 @@ function parsePrompt(text) {
   if (domain === 'medical' || domain === 'legal' || /\b(critical|important|urgent|sensitive|confidential|production)\b/.test(t)) risk = 'high';
   else if (complexity === 'high' || domain === 'finance') risk = 'medium';
 
-  return { family, domain, complexity, risk };
+  // Estimated output token count — this drives the generation-time component of latency.
+  // Heuristics mirror the Python backend's predict_output_tokens().
+  const outputTokens = (
+    family === 'coding'         ? (complexity === 'high' ? 3500 : complexity === 'medium' ? 1200 : 400) :
+    family === 'summarization'  ? (complexity === 'high' ? 800  : 300) :
+    family === 'translation'    ? (complexity === 'high' ? 1500 : 600) :
+    family === 'agent'          ? 2000 :
+    family === 'document_qa'    ? 600  :
+    family === 'reasoning'      ? (complexity === 'high' ? 2000 : 700) :
+    /* chat / default */          (complexity === 'high' ? 1000 : complexity === 'medium' ? 400 : 150)
+  );
+
+  return { family, domain, complexity, risk, outputTokens };
 }
 
 // ── Select winning model ──
@@ -1273,7 +1294,12 @@ function runRouting() {
   setTimeout(() => {
     const task = parsePrompt(prompt);
     const { winner, confidence } = selectModel(task);
-    const latency = winner.lat + Math.round((Math.random()-0.5)*100);
+    // Total latency = TTFT + generation time.
+    // TTFT: winner.lat (ms) — time until first token arrives.
+    // Generation time: output_tokens / tokens_per_sec — dominant for long responses.
+    const generationMs = Math.round((task.outputTokens / winner.tps) * 1000);
+    const jitter = Math.round((Math.random() - 0.5) * winner.lat * 0.15);
+    const latency = winner.lat + generationMs + jitter;
     const cost = winner.cost * (0.9 + Math.random()*0.2);
 
     // Pipeline trace numbers (realistic funnel)

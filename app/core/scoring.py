@@ -252,14 +252,35 @@ def predict_output_tokens(task: TaskFeatures) -> int:
 
 
 def estimate_request_latency_ms(model: Dict[str, Any], task: TaskFeatures, n_stages: int = 1) -> float:
-    base = model["ops_dynamic"]["recent_latency_ms"]
-    complexity_mult = {"low": 1.0, "medium": 1.25, "high": 1.60}.get(task.complexity, 1.0)
+    """
+    Estimate total end-to-end latency for a request.
+
+    Formula:  Total = TTFT + Generation_Time
+      - TTFT (Time To First Token): from ops_dynamic.recent_latency_ms, scaled by
+        modality and n_stages.
+      - Generation Time: estimated_output_tokens / tokens_per_sec * 1000 ms.
+        This is the dominant factor for long-form responses (code, essays, websites).
+
+    Without the generation component a 3000-token website would appear to complete
+    in ~700 ms when reality is closer to 50-60 seconds for a Frontier model.
+    """
+    ttft = model["ops_dynamic"]["recent_latency_ms"]
+
+    # Modality overhead on TTFT (pre-fill cost for multimodal inputs)
     modality_mult = 1.0
     if "audio" in task.input_formats or "video" in task.input_formats:
         modality_mult += 0.25
     if "pdf" in task.input_formats and task.requires_ocr:
         modality_mult += 0.20
-    return float(base * complexity_mult * modality_mult * n_stages)
+
+    scaled_ttft = ttft * modality_mult * n_stages
+
+    # Generation time = output tokens / throughput
+    output_tokens = predict_output_tokens(task)
+    tps = model["ops_dynamic"].get("tokens_per_sec", 80.0)  # fallback for legacy rows
+    generation_ms = (output_tokens / tps) * 1000.0
+
+    return float(scaled_ttft + generation_ms)
 
 
 # --------------------------------------------------------------------------

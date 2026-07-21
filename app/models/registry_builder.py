@@ -266,14 +266,21 @@ def _build_ops_static(tier: str) -> Dict[str, float]:
 import random
 
 def _build_ops_dynamic(tier: str) -> Dict[str, Any]:
-    # Base latencies
-    base_latency = {"Frontier": 3000.0, "Mid": 1200.0, "Economy": 500.0}.get(tier, 1200.0)
+    # Base TTFT (Time To First Token) per tier — from Artificial Analysis p50 data
+    base_ttft = {"Frontier": 3000.0, "Mid": 1200.0, "Economy": 500.0}.get(tier, 1200.0)
     # Add realistic jitter (+/- 20%)
-    jitter = random.uniform(-0.2, 0.2) * base_latency
-    actual_latency = round(base_latency + jitter, 1)
-    
+    jitter = random.uniform(-0.2, 0.2) * base_ttft
+    actual_ttft = round(base_ttft + jitter, 1)
+
+    # Output throughput in tokens/sec — faster models tend to be smaller/quantised
+    # Ranges from Artificial Analysis: Frontier ~40-80, Mid ~80-150, Economy ~150-300
+    base_tps = {"Frontier": 60.0, "Mid": 110.0, "Economy": 200.0}.get(tier, 110.0)
+    tps_jitter = random.uniform(-0.15, 0.15) * base_tps
+    actual_tps = round(base_tps + tps_jitter, 1)
+
     return {
-        "recent_latency_ms": actual_latency,
+        "recent_latency_ms": actual_ttft,
+        "tokens_per_sec": actual_tps,
         "recent_failure_rate": round(random.uniform(0.001, 0.02), 4),
         "current_availability": round(random.uniform(0.99, 0.9999), 4),
         "rate_limit_pressure": round(random.uniform(0.0, 0.2), 2),

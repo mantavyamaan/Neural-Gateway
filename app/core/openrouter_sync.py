@@ -106,6 +106,19 @@ def map_model_to_registry(or_model: Dict[str, Any]) -> Dict[str, Any]:
             "evaluated_task_families": [],
         },
     }
+
+    # Patch in real Artificial Analysis throughput/latency if available.
+    # AA provides: output_tokens_per_second (throughput) and latency_ms (TTFT p50).
+    # These are the gold-standard numbers — always prefer them over tier defaults.
+    if aa_data:
+        if aa_data.get("output_tokens_per_second") is not None:
+            entry["ops_dynamic"]["tokens_per_sec"] = float(aa_data["output_tokens_per_second"])
+        if aa_data.get("latency") is not None:
+            # AA latency is in seconds, convert to ms
+            entry["ops_dynamic"]["recent_latency_ms"] = float(aa_data["latency"]) * 1000.0
+        elif aa_data.get("time_to_first_token") is not None:
+            entry["ops_dynamic"]["recent_latency_ms"] = float(aa_data["time_to_first_token"]) * 1000.0
+
     return entry
 
 
