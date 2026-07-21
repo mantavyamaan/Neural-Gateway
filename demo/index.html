@@ -521,11 +521,12 @@ details[open] summary::before { transform:rotate(90deg); }
     width: 100%; 
     min-width: 100%; 
     border-right: none; 
-    border-bottom: 1px solid rgba(88,166,255,0.1); 
+    border-top: 1px solid rgba(88,166,255,0.1); 
     display: block; 
     height: auto;
+    order: 2;
   }
-  .main { padding: 28px 20px; max-width: 100%; }
+  .main { padding: 28px 20px; max-width: 100%; order: 1; }
   .metrics-grid { grid-template-columns: 1fr 1fr; }
   .two-col { grid-template-columns: 1fr; }
   .form-row { grid-template-columns: 1fr 1fr; }
