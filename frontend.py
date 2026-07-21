@@ -914,6 +914,23 @@ if route_clicked:
                     st.session_state.trace        = data.get("decision_record", {}).get("pipeline_trace", {}) or {}
                     st.session_state.raw_data     = data
                     st.session_state.prompt       = prompt
+                    
+                    # Prepare the final prompt for the LLM (injecting file contents)
+                    final_llm_prompt = prompt
+                    if uploaded_files:
+                        import fitz
+                        for uf in uploaded_files:
+                            try:
+                                uf.seek(0)
+                                if uf.name.lower().endswith(".pdf"):
+                                    doc = fitz.open(stream=uf.read(), filetype="pdf")
+                                    text = "\\n".join([page.get_text() for page in doc])
+                                    final_llm_prompt += f"\\n\\n--- Content of {uf.name} ---\\n{text}"
+                                else:
+                                    final_llm_prompt += f"\\n\\n--- Content of {uf.name} ---\\n{uf.read().decode('utf-8', errors='ignore')}"
+                            except Exception:
+                                pass
+                    st.session_state.final_llm_prompt = final_llm_prompt
                     st.session_state.elapsed_ms   = elapsed
                 else:
                     st.session_state.decision  = None
@@ -1167,9 +1184,10 @@ elif st.session_state.decision:
 
             with st.spinner(f"Generating with {selected_model_id}…"):
                 try:
+                    llm_prompt = st.session_state.get("final_llm_prompt", st.session_state.prompt)
                     completion = client.chat.completions.create(
                         model=selected_model_id,
-                        messages=[{"role": "user", "content": st.session_state.prompt}],
+                        messages=[{"role": "user", "content": llm_prompt}],
                         stream=True,
                     )
                     for chunk in completion:
