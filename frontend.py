@@ -777,7 +777,7 @@ with st.sidebar:
         req_cite   = st.toggle("Citations",    value=False)
 
     st.markdown('<div class="section-header">Performance Limits</div>', unsafe_allow_html=True)
-    max_latency = st.slider("Max Latency (ms)", 500, 20000, 5000, 500, format="%d ms")
+    max_latency = st.slider("Max Latency (ms)", 1000, 120000, 30000, 1000, format="%d ms")
     max_cost    = st.slider("Max Cost ($/1M tokens)", 0.1, 50.0, 10.0, 0.5, format="$%.1f")
 
     st.markdown('<div class="section-header">Tenant & Model Filter</div>', unsafe_allow_html=True)
