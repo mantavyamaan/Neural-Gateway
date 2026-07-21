@@ -916,21 +916,34 @@ if route_clicked:
                     st.session_state.prompt       = prompt
                     
                     # Prepare the final prompt for the LLM (injecting file contents)
-                    final_llm_prompt = prompt
+                    multimodal_content = [{"type": "text", "text": prompt}]
                     if uploaded_files:
-                        import fitz
+                        import fitz, base64, mimetypes
                         for uf in uploaded_files:
                             try:
                                 uf.seek(0)
-                                if uf.name.lower().endswith(".pdf"):
+                                ext = uf.name.lower().split('.')[-1]
+                                mime_type, _ = mimetypes.guess_type(uf.name)
+                                
+                                if ext == "pdf":
                                     doc = fitz.open(stream=uf.read(), filetype="pdf")
                                     text = "\\n".join([page.get_text() for page in doc])
-                                    final_llm_prompt += f"\\n\\n--- Content of {uf.name} ---\\n{text}"
+                                    multimodal_content[0]["text"] += f"\\n\\n--- Content of {uf.name} ---\\n{text}"
+                                elif mime_type and mime_type.startswith("image/"):
+                                    b64 = base64.b64encode(uf.read()).decode('utf-8')
+                                    multimodal_content.append({
+                                        "type": "image_url",
+                                        "image_url": {"url": f"data:{mime_type};base64,{b64}"}
+                                    })
                                 else:
-                                    final_llm_prompt += f"\\n\\n--- Content of {uf.name} ---\\n{uf.read().decode('utf-8', errors='ignore')}"
+                                    multimodal_content[0]["text"] += f"\\n\\n--- Content of {uf.name} ---\\n{uf.read().decode('utf-8', errors='ignore')}"
                             except Exception:
                                 pass
-                    st.session_state.final_llm_prompt = final_llm_prompt
+                                
+                    if len(multimodal_content) == 1:
+                        st.session_state.final_llm_prompt = multimodal_content[0]["text"]
+                    else:
+                        st.session_state.final_llm_prompt = multimodal_content
                     st.session_state.elapsed_ms   = elapsed
                 else:
                     st.session_state.decision  = None
