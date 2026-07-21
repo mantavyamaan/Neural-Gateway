@@ -839,7 +839,7 @@ with st.container():
             label_visibility="collapsed"
         )
     with col_btn:
-        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown('<div style="margin-top: 8px;"></div>', unsafe_allow_html=True)
         route_clicked = st.button("⚡ Route Request", type="primary", use_container_width=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
