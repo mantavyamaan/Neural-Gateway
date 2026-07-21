@@ -691,9 +691,32 @@ def get_friendly_reason(raw_data):
             reason += f"- **Latency:** Estimated **{est_lat/1000:.1f}s** exceeds your cap of **{max_lat_v/1000:.1f}s**.\n"
         return reason + "\n*Increase the sliders in the sidebar to allow more capable models.*"
     elif status == "no_feasible_models":
-        return "No models in the registry can satisfy this request. The document may be too large, or no model supports the required features (e.g., Web Search, OCR)."
+        msg = "No models in the registry can satisfy this request. The document may be too large, or no model supports the required features (e.g., Web Search, OCR).\n\n"
+        dr = raw_data.get("decision_record", {})
+        feas = dr.get("feasibility_reasons", {})
+        if feas:
+            msg += "**Why models were excluded:**\n"
+            for model, reason in list(feas.items())[:5]:
+                msg += f"- `{model}`: {reason}\n"
+        return msg
     elif status == "no_models_after_policy":
-        return "Models are available, but all were blocked by your active Tenant Policy constraints."
+        msg = "Models are available, but all were blocked by your active Tenant Policy constraints.\n\n"
+        dr = raw_data.get("decision_record", {})
+        notes = dr.get("policy_notes", [])
+        if notes:
+            msg += "**Policy Notes:**\n" + "\n".join([f"- {n}" for n in notes]) + "\n\n"
+        
+        feas = dr.get("feasibility_reasons", {})
+        policy_reasons = dr.get("policy_reasons", {})
+        
+        combined_reasons = {**feas, **policy_reasons}
+        if combined_reasons:
+            msg += "**Why models were excluded:**\n"
+            for model, reason in list(combined_reasons.items())[:5]:
+                msg += f"- `{model}`: {reason}\n"
+            if len(combined_reasons) > 5:
+                msg += f"- ...and {len(combined_reasons)-5} more.\n"
+        return msg
     elif status == "abstained":
         return "The routing engine could not reach a confident decision. The winning candidate's confidence score was below the minimum threshold."
     return f"Status code: `{status}`"
