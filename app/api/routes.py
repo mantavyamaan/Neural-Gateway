@@ -15,7 +15,7 @@ import anyio
 from dataclasses import asdict
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Body, Header, HTTPException, Depends
+from fastapi import APIRouter, Body, Header, HTTPException, Depends, BackgroundTasks
 
 from app.api.schemas import (
     ExecutionPlanOut,
@@ -303,12 +303,9 @@ async def health_check():
     return {"status": "ok", "registry_models": len(get_all_models())}
 
 @router.post("/train_parser", tags=["neural_gateway-gateway"])
-async def train_parser(payload: TrainParserRequest):
+async def train_parser(payload: TrainParserRequest, background_tasks: BackgroundTasks):
     try:
         from app.core.embedding_parser import get_parser, _cached_parse
-        import subprocess
-        import sys
-        from pathlib import Path
         
         parser = get_parser()
         
@@ -325,11 +322,11 @@ async def train_parser(payload: TrainParserRequest):
             "needs_verification": False
         }
         
-        project_root = Path(__file__).resolve().parents[2]
-        dataset_path = project_root / "data" / "semantic_examples.json"
+        def _add():
+            with _parser_lock:
+                parser.add_example(new_example)
         
-        with _parser_lock:
-            parser.add_example(new_example)
+        background_tasks.add_task(_add)
             
         return {"status": "success", "message": "Example added and matrix rebuilt"}
     except HTTPException:
