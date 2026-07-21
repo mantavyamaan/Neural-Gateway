@@ -239,16 +239,28 @@ def estimate_request_cost_usd(model: Dict[str, Any], input_tokens: int, output_t
 
 def predict_output_tokens(task: TaskFeatures) -> int:
     """Heuristic regression for output tokens if user estimate is unreliable."""
-    base = task.estimated_output_tokens
-    if task.primary_family == "coding":
-        return max(base, int(task.estimated_tokens * 1.2) + 200)
-    if task.primary_family == "summarization":
-        return max(base, int(task.estimated_tokens * 0.3) + 100)
-    if task.primary_family == "translation":
-        return max(base, task.estimated_tokens + 50)
-    if task.primary_family == "chat":
-        return max(base, 250)
-    return max(base, 100)
+    # If the client explicitly provided an estimate (other than the 1200 default), trust it
+    if task.estimated_output_tokens != 1200:
+        return task.estimated_output_tokens
+
+    comp = task.complexity
+    family = task.primary_family
+
+    if family == "coding":
+        return 3500 if comp == "high" else 1200 if comp == "medium" else 400
+    elif family == "summarization":
+        return 800 if comp == "high" else 300
+    elif family == "translation":
+        return 1500 if comp == "high" else 600
+    elif family == "agent":
+        return 2000
+    elif family == "document_qa":
+        return 600
+    elif family == "reasoning":
+        return 2000 if comp == "high" else 700
+    else:
+        # Chat / general
+        return 1000 if comp == "high" else 400 if comp == "medium" else 150
 
 
 def estimate_request_latency_ms(model: Dict[str, Any], task: TaskFeatures, n_stages: int = 1) -> float:
