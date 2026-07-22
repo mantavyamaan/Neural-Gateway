@@ -94,7 +94,7 @@ PARSER_ESCALATE_THRESHOLD = _float_env("NEURAL_GATEWAY_PARSER_ESCALATE_THRESHOLD
 # heuristics are useful for local demos, but must never be presented as an
 # evidence-based automatic production choice.
 REQUIRE_MEASURED_EVIDENCE = _bool_env("NEURAL_GATEWAY_REQUIRE_MEASURED_EVIDENCE", True)
-ALLOW_SERVER_FILE_PATHS = _bool_env("NEURAL_GATEWAY_ALLOW_SERVER_FILE_PATHS", True)
+ALLOW_SERVER_FILE_PATHS = _bool_env("NEURAL_GATEWAY_ALLOW_SERVER_FILE_PATHS", False)
 ADMIN_API_KEY = os.getenv("NEURAL_GATEWAY_ADMIN_API_KEY")
 CORS_ORIGINS = [
     origin.strip() for origin in os.getenv(
@@ -107,13 +107,3 @@ CORS_ORIGINS = [
 # model works; default is a 384-dim MiniLM (~90MB, English-focused).
 NEURAL_GATEWAY_EMBEDDING_MODEL = os.getenv("NEURAL_GATEWAY_EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5")
 
-# LLM tiebreaker: model used when the embedding classifier's cosine
-# similarity is below LEARNED_DOMAIN_CONFIDENCE_THRESHOLD on a text-only
-# prompt. Requires OPENAI_API_KEY. Set to "" (empty) to disable entirely.
-NEURAL_GATEWAY_LLM_PARSER_MODEL = os.getenv("NEURAL_GATEWAY_LLM_PARSER_MODEL", "gpt-4o-mini")
-LLM_PARSER_ENABLED = bool(os.getenv("OPENAI_API_KEY")) and bool(NEURAL_GATEWAY_LLM_PARSER_MODEL)
-
-# Primary LLM Parser Configuration (Ollama vs Cloud)
-NEURAL_GATEWAY_PARSER_API_KEY = os.getenv("NEURAL_GATEWAY_PARSER_API_KEY", "")
-NEURAL_GATEWAY_PARSER_BASE_URL = os.getenv("NEURAL_GATEWAY_PARSER_BASE_URL", "http://localhost:11434/v1")
-NEURAL_GATEWAY_PARSER_MODEL_CLOUD = os.getenv("NEURAL_GATEWAY_PARSER_MODEL", "llama3.1:latest")

@@ -41,40 +41,62 @@ RISK_ORDER = {"low": 0, "medium": 1, "high": 2, "extreme": 3}
 # Deterministic, monotonic: can only RAISE risk, never lower it.
 # (tier, risk_type, domain-hint) triggered by lexical patterns.
 
-SAFETY_RULES: list[tuple[re.Pattern, str, str, str | None]] = [
-    (re.compile(r"\b(diagnos\w+|symptom|dosage|prescri\w+|chest pain|overdose|"
-                r"tumor|malignant|mg of|medication|side effects?)\b", re.I),
-     "high", "regulated_advice", "medical"),
-    (re.compile(r"\b(suicid\w+|self.?harm|kill (myself|himself|herself))\b", re.I),
-     "extreme", "regulated_advice", "medical"),
-    (re.compile(r"\b(lawsuit|indemnif\w+|liabilit\w+|sue |breach of contract|"
-                r"non.?compete|nda\b|statute)\b", re.I),
-     "high", "regulated_advice", "legal"),
-    (re.compile(r"\b(invest(ment)?s?\b|portfolio|tax (return|filing)|401k|"
-                r"loan approval|creditworthiness)\b", re.I),
-     "high", "regulated_advice", "finance"),
-    (re.compile(r"\b(api.?key|password|private key|secret[ ]?key|credentials?|"
-                r"exploit|sql injection|xss|privilege escalation|bypass auth)\b", re.I),
-     "high", "security_sensitive", "security"),
-    (re.compile(r"\b(ssn|social security number|passport number|aadhaar|"
-                r"pan card|date of birth|address|medical record number)\b", re.I),
-     "high", "pii_sensitive", None),
-    (re.compile(r"\b(drop table|rm -rf|delete (all|every)|wipe (the )?database|"
-                r"prod(uction)? deploy)\b", re.I),
-     "high", "operational", None),
+# Tier 1: ALWAYS active — hard override regardless of ML confidence
+TIER1_RULES: list[tuple[re.Pattern, str, str, str | None]] = [
+    (re.compile(r'\b(suicid\w+|self.?harm|kill (myself|himself|herself))\b', re.I),
+     'extreme', 'regulated_advice', 'medical'),
+    (re.compile(r'\b(drop table|rm -rf|delete (all|every)|wipe (the )?database)\b', re.I),
+     'high', 'operational', 'security'),
+    (re.compile(r'\b(api.?key|private key|secret[ ]?key|credentials?|exploit|sql injection|xss|privilege escalation|bypass auth)\b', re.I),
+     'high', 'security_sensitive', 'security'),
+    (re.compile(r'\b(chest pain|overdose|suicidal ideation)\b', re.I),
+     'high', 'regulated_advice', 'medical'),
+    # High-confidence legal signals — very specific terms unlikely to appear in non-legal contexts
+    (re.compile(r'\b(liabilit\w+|non.?compete|nda\b|indemnif\w+|breach of contract|sue\b|lawsuit)\b', re.I),
+     'high', 'regulated_advice', 'legal'),
+    # High-confidence medical signals — drug interactions, dosage questions
+    (re.compile(r'\b(drug interaction|medication.*interact|blood thinner|dangerous.*medication|allergic reaction|symptom(s)? of|what (are|is) the symptom)\b', re.I),
+     'high', 'regulated_advice', 'medical'),
 ]
 
+# Tier 2: confidence-gated — only override if ML confidence < 0.75
+TIER2_RULES: list[tuple[re.Pattern, str, str, str | None]] = [
+    (re.compile(r'\b(diagnos\w+|symptom|dosage|prescri\w+|tumor|malignant|mg of|medication|side effects?)\b', re.I),
+     'high', 'regulated_advice', 'medical'),
+    (re.compile(r'\b(statute|court|legal advice|attorney|lawyer|rights if)\b', re.I),
+     'high', 'regulated_advice', 'legal'),
+    (re.compile(r'\b(invest(ment)?s?\b|financial portfolio|stock portfolio|investment portfolio|tax (return|filing)|401k|loan approval|creditworthiness)\b', re.I),
+     'high', 'regulated_advice', 'finance'),
+    (re.compile(r'\b(ssn|social security number|passport number|aadhaar|pan card|medical record number)\b', re.I),
+     'high', 'pii_sensitive', None),
+    (re.compile(r'\b(prod(uction)? deploy)\b', re.I),
+     'high', 'operational', None),
+]
+
+
 def apply_safety_overrides(prompt: str, parse: StructuredSemanticParse) -> StructuredSemanticParse:
-    normalized_prompt = re.sub(r"\s+", " ", prompt.lower().strip())
-    for pattern, min_tier, risk_type, domain in SAFETY_RULES:
-        if pattern.search(normalized_prompt):
+    normalized = re.sub(r'\s+', ' ', prompt.lower().strip())
+    # Tier 1: always active
+    for pattern, min_tier, risk_type, domain in TIER1_RULES:
+        if pattern.search(normalized):
             if RISK_ORDER.get(min_tier, 0) > RISK_ORDER.get(parse.risk_tier, 0):
                 parse.risk_tier = min_tier
                 parse.risk_type = risk_type
                 parse.needs_verification = True
-            if domain and parse.domain in ("general", "generic"):
+            if domain:
                 parse.domain = domain
+    # Tier 2: only override if parser confidence is below threshold
+    if getattr(parse, 'parser_confidence', 1.0) < 0.75:
+        for pattern, min_tier, risk_type, domain in TIER2_RULES:
+            if pattern.search(normalized):
+                if RISK_ORDER.get(min_tier, 0) > RISK_ORDER.get(parse.risk_tier, 0):
+                    parse.risk_tier = min_tier
+                    parse.risk_type = risk_type
+                    parse.needs_verification = True
+                if domain:
+                    parse.domain = domain
     return parse
+
 
 
 # ----------------------------- Parser ----------------------------------
@@ -168,15 +190,15 @@ class EmbeddingSemanticParser:
         np.save(cache_file, vecs)
         
         # Train Classifiers
-        clf_family = LogisticRegression(max_iter=1000)
+        clf_family = LogisticRegression(max_iter=1000, class_weight='balanced')
         clf_family.fit(vecs, [ex["primary_family"] for ex in self.examples])
         joblib.dump(clf_family, clf_fam_file)
         
-        clf_domain = LogisticRegression(max_iter=1000)
+        clf_domain = LogisticRegression(max_iter=1000, class_weight='balanced')
         clf_domain.fit(vecs, [ex["domain"] for ex in self.examples])
         joblib.dump(clf_domain, clf_dom_file)
         
-        clf_risk = LogisticRegression(max_iter=1000)
+        clf_risk = LogisticRegression(max_iter=1000, class_weight='balanced')
         clf_risk.fit(vecs, [ex.get("risk_tier", "low") for ex in self.examples])
         joblib.dump(clf_risk, clf_risk_file)
         
@@ -252,15 +274,15 @@ class EmbeddingSemanticParser:
             
         np.save(cache_dir / f"examples_{digest}.npy", self.matrix)
         
-        self.clf_family = LogisticRegression(max_iter=1000)
+        self.clf_family = LogisticRegression(max_iter=1000, class_weight='balanced')
         self.clf_family.fit(self.matrix, [ex["primary_family"] for ex in self.examples])
         joblib.dump(self.clf_family, cache_dir / f"clf_fam_{digest}.joblib")
         
-        self.clf_domain = LogisticRegression(max_iter=1000)
+        self.clf_domain = LogisticRegression(max_iter=1000, class_weight='balanced')
         self.clf_domain.fit(self.matrix, [ex["domain"] for ex in self.examples])
         joblib.dump(self.clf_domain, cache_dir / f"clf_dom_{digest}.joblib")
         
-        self.clf_risk = LogisticRegression(max_iter=1000)
+        self.clf_risk = LogisticRegression(max_iter=1000, class_weight='balanced')
         self.clf_risk.fit(self.matrix, [ex.get("risk_tier", "low") for ex in self.examples])
         joblib.dump(self.clf_risk, cache_dir / f"clf_risk_{digest}.joblib")
         
@@ -333,21 +355,41 @@ class EmbeddingSemanticParser:
                     import logging
                     logging.getLogger(__name__).warning(f"Cross-encoder reranking failed: {e}")
 
+            # KNN-LR alignment: only use neighbors matching LR primary family for secondary field voting
+            aligned = [(ex, wt) for ex, wt in zip(neighbors, w) if ex.get('primary_family') == lr_family]
+            if len(aligned) >= 3:
+                aligned_neighbors, aligned_w_list = zip(*aligned)
+                aligned_w = np.array(aligned_w_list, dtype=float)
+                aligned_w /= aligned_w.sum()
+            else:
+                aligned_neighbors, aligned_w = neighbors, w
+
             # per-field weighted vote for secondary fields
             fields: dict[str, str] = {}
             for field in CATEGORICAL_FIELDS:
                 votes: dict[str, float] = defaultdict(float)
-                for ex, weight in zip(neighbors, w):
+                for ex, weight in zip(aligned_neighbors, aligned_w):
                     votes[str(ex.get(field, "unknown"))] += float(weight)
                 winner = max(votes, key=votes.get)
                 fields[field] = str(winner)
 
             bools: dict[str, bool] = {}
             for field in BOOLEAN_FIELDS:
-                score = sum(wt for ex, wt in zip(neighbors, w) if ex.get(field))
+                score = sum(wt for ex, wt in zip(aligned_neighbors, aligned_w) if ex.get(field))
                 bools[field] = bool(score > 0.5)
 
             top1 = float(top_sims[0])
+
+            # Multi-factor ambiguity using the full formula (wires previously dead methods)
+            votes_family: dict[str, float] = defaultdict(float)
+            votes_domain: dict[str, float] = defaultdict(float)
+            for ex, wt in zip(neighbors, w):
+                votes_family[str(ex.get('primary_family', 'unknown'))] += float(wt)
+                votes_domain[str(ex.get('domain', 'unknown'))] += float(wt)
+            fam_entropy = self.norm_entropy(list(votes_family.values()))
+            dom_entropy = self.norm_entropy(list(votes_domain.values()))
+            top1_sim = float(top_sims[0]) if len(top_sims) > 0 else 0.0
+            ambiguity = self.ambiguity(margin, top1_sim, fam_entropy, dom_entropy)
 
             parse = StructuredSemanticParse(
                 primary_family=lr_family,
@@ -359,6 +401,7 @@ class EmbeddingSemanticParser:
                 ambiguity_score=round(ambiguity, 3),
                 decomposition_needed=bools["decomposition_needed"],
                 needs_verification=bools["needs_verification"],
+                parser_confidence=round(float(prob_top1), 3),
                 complexity=fields.get("complexity")
             )
 
@@ -429,4 +472,5 @@ def _cached_parse(prompt: str) -> StructuredSemanticParse:
     return get_parser().parse(prompt)
 
 def parse_prompt_to_semantic_struct(prompt: str) -> StructuredSemanticParse:
-    return _cached_parse(prompt)
+    import copy
+    return copy.deepcopy(_cached_parse(prompt))

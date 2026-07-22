@@ -23,23 +23,20 @@ from app.core.openrouter_sync import sync_openrouter_models
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    import asyncio
     
-    # Upsert local built-in registry (Generative models, etc.)
-    from app.models.registry_builder import MODEL_REGISTRY
-    from app.core.database import bulk_upsert_models
-    for m in MODEL_REGISTRY:
-        m["evidence"]["eligible_for_auto_route"] = True
-    bulk_upsert_models(MODEL_REGISTRY)
-    
-    # Pull live models from OpenRouter (only seeds if DB is empty)
+    # Pull live models from OpenRouter (preserves existing DB priors)
     sync_openrouter_models()
-    # Note: benchmark_sync is called automatically inside sync_openrouter_models()
-    # but run it independently on startup to handle cases where OpenRouter is unreachable
-    try:
-        from app.core.benchmark_sync import run_benchmark_sync
-        run_benchmark_sync()
-    except Exception:
-        pass  # non-critical -- routing still works with existing DB data
+    
+    # Run benchmark sync in the background so it doesn't block startup
+    async def bg_benchmark_sync():
+        try:
+            from app.core.benchmark_sync import run_benchmark_sync
+            await asyncio.to_thread(run_benchmark_sync)
+        except Exception as e:
+            logging.getLogger("uvicorn.error").warning(f"Background benchmark sync failed: {e}")
+            
+    asyncio.create_task(bg_benchmark_sync())
 
     # Warmup the Embedding Semantic Parser so the ONNX session is loaded in memory
     try:

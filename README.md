@@ -1,4 +1,4 @@
-# Neural Gateway
+﻿# Neural Gateway
 
 > **🌐 [Try the Live Demo →](https://mantavyamaan.github.io/Neural-Gateway/demo)**
 
@@ -156,7 +156,7 @@ By default, task understanding in Neural Gateway is handled by the **EmbeddingSe
 
 ## Testing
 
-```bash
+```bashdd
 pytest tests/ -v
 ```
 
@@ -172,8 +172,10 @@ registry with versioned capability probes, task-family evaluations, and real
 provider telemetry before enabling automatic routing.
 
 Set `NEURAL_GATEWAY_ADMIN_API_KEY` before enabling the mutable model and outcome
-endpoints. Do not expose server-local `files` paths; use authenticated uploads
-or object-store references instead.
+endpoints. 
+
+**Security & File Access Defaults:**
+By default, `ALLOW_SERVER_FILE_PATHS` in `app/config.py` is disabled to prevent Path Traversal attacks. When testing local files or artifacts, you MUST upload them via the frontend UI rather than supplying local paths to the `/execute` API, as the API drops all absolute host paths for security. Use authenticated uploads or object-store references instead for production deployments.
 
 Tests mirror the original design-doc demonstration scenarios: a coding
 task, a high-risk legal contract review, audio summarization, an

@@ -161,12 +161,4 @@ def sync_openrouter_models() -> None:
         
     bulk_upsert_models(updated_models)
 
-    # Automatically run benchmark sync to unlock models with real leaderboard data
-    try:
-        from app.core.benchmark_sync import run_benchmark_sync
-        summary = run_benchmark_sync()
-        logger.info(f"Benchmark sync result: {summary}")
-    except Exception as bench_exc:
-        logger.warning(f"Benchmark sync failed (non-critical): {bench_exc}")
-
     logger.info(f"Successfully synced {len(updated_models)} models to database ({len(or_models)} raw fetched from OpenRouter).")

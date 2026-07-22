@@ -141,8 +141,9 @@ def route(
 
     # ---- 7. Utility scoring ----
     effective_profile = choose_effective_profile(task, profile_name)
-    scored = compute_utilities(frontier, task, effective_profile)
     all_scored = compute_utilities(enriched, task, effective_profile)
+    frontier_names = {m["name"] for m in frontier}
+    scored = [m for m in all_scored if m["name"] in frontier_names]
 
     # ---- 8. Confidence estimation ----
     confidence_data = estimate_confidence(scored, task, effective_profile)
@@ -191,12 +192,16 @@ def route(
                 cascade_strategy = "semantic_similarity"
                 
             primary_model = cheap_models[0]
-            # Cascade is an explicit override that bypasses Thompson Sampling uncertainty,
-            # so we fabricate a 1.0 confidence to guarantee it passes the abstention safety net.
-            selected_win_probability = 1.0
+            # Cascade routing: cheap model selected for low-complexity task with fallback safety net
+            selected_win_probability = max(0.70, confidence_data["win_probabilities"].get(primary_model["name"], 0.7))
             confidence_data["selected_model"] = primary_model["name"]
-            confidence_data["selected_confidence"] = 1.0
-            confidence_data["selected_margin"] = 1.0
+            confidence_data["selected_confidence"] = selected_win_probability
+            
+            other_probs = [
+                p for name, p in confidence_data["win_probabilities"].items()
+                if name != primary_model["name"]
+            ]
+            confidence_data["selected_margin"] = selected_win_probability - max(other_probs, default=0.0)
             fallback_models = [m for m in all_scored if m["name"] != primary_model["name"]][:3]
 
     # ---- Verifier planning ----
@@ -265,14 +270,16 @@ def route(
     abstain = False
     escalate = policy.must_escalate
     
-    # Dynamic confidence scaling for massive registries:
-    # When N models is large, Thompson win probability dilutes.
-    # We require the winner to be at least 3x better than random chance (1/N), capped at the absolute threshold.
-    dynamic_threshold = min(CONFIDENCE_ABSTAIN_THRESHOLD, 3.0 / max(1, len(scored)))
+    # Dynamic confidence scaling for registries:
+    # When N models are evaluated, Thompson win probability dilutes to ~1/N per candidate.
+    # Require winner to beat random chance (1/N) by 1.2x, capped at CONFIDENCE_ABSTAIN_THRESHOLD.
+    n_candidates = max(1, len(scored))
+    dynamic_threshold = min(CONFIDENCE_ABSTAIN_THRESHOLD, 1.2 / n_candidates)
     minimum_confidence = max(dynamic_threshold, task.request_constraints.min_confidence)
     
+    # Low confidence flags escalation for human review/observability, but per explicit directive,
+    # the router NEVER abstains due to low confidence — it always returns the best generated execution plan.
     if selected_win_probability < minimum_confidence:
-        abstain = True
         escalate = True
     elif selected_win_probability < CONFIDENCE_ESCALATE_THRESHOLD:
         escalate = True

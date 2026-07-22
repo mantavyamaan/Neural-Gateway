@@ -218,6 +218,17 @@ def parse_task_request(
     if soft is None:
         soft = parse_prompt_to_semantic_struct(prompt)
         
+        # Family alias normalization: map non-canonical names to valid schema values
+        FAMILY_ALIASES = {
+            "math": "mathematics",
+            "general": "chat",       # 'general' is not a valid family
+            "extraction": "extraction",
+            "creative_writing": "creative",
+            "agentic": "agent",
+        }
+        if soft.primary_family in FAMILY_ALIASES:
+            soft.primary_family = FAMILY_ALIASES[soft.primary_family]
+        
         # Populate stages and graph if missing
         required_stages = soft.required_stages if soft.required_stages else [soft.primary_family]
         if soft.primary_family == "ocr" and "document_qa" not in required_stages:
@@ -236,28 +247,64 @@ def parse_task_request(
 
 
     # ---- Topic-driven domain/document override ----
-    inferred_topics = [a.inferred_topic for a in artifacts if a.inferred_topic]
-    if inferred_topics and soft.domain == "general":
-        topic_to_domain = {
-            "legal_contract": ("legal", "high", "regulated_advice", "contract"),
-            "financial_document": ("finance", "high", "regulated_advice", "financial_document"),
-            "medical_record": ("medical", "high", "regulated_advice", "medical_record"),
-            "security_report": ("security", "high", "security_sensitive", "security_report"),
-            "research_paper": ("research", "low", "standard", "research_paper"),
-            "support_record": ("customer_support", "low", "standard", "support_record"),
-        }
-        topic = inferred_topics[0]
-        if topic in topic_to_domain:
-            soft.domain, soft.risk_tier, soft.risk_type, soft.document_type = topic_to_domain[topic]
+    from app.core.domain_classifier import classify_domain, RISK_METADATA, LEARNED_DOMAIN_CONFIDENCE_THRESHOLD
+    
+    inferred_domain, conf = classify_domain(prompt)
+    if inferred_domain and conf >= LEARNED_DOMAIN_CONFIDENCE_THRESHOLD:
+        if soft.domain in ("general", "generic") or soft.domain is None:
+            soft.domain = inferred_domain
+    else:
+        inferred_topics = [a.inferred_topic for a in artifacts if a.inferred_topic]
+        if inferred_topics and soft.domain == "general":
+            topic_to_domain = {
+                "legal_contract": ("legal", "high", "regulated_advice", "contract"),
+                "financial_document": ("finance", "high", "regulated_advice", "financial_document"),
+                "medical_record": ("medical", "high", "regulated_advice", "medical_record"),
+                "security_report": ("security", "high", "security_sensitive", "security_report"),
+                "research_paper": ("research", "low", "standard", "research_paper"),
+                "support_record": ("customer_support", "low", "standard", "support_record"),
+            }
+            topic = inferred_topics[0]
+            if topic in topic_to_domain:
+                soft.domain, soft.risk_tier, soft.risk_type, soft.document_type = topic_to_domain[topic]
+
+    if soft.domain in RISK_METADATA:
+        rt, rtype, dtype = RISK_METADATA[soft.domain]
+        soft.risk_tier = rt
+        soft.risk_type = rtype
+        soft.document_type = dtype
+
+    # Domain normalization: 'software' maps to 'general' for routing purposes
+    # (identical safety profile; prevents coding tasks being labelled 'software' domain)
+    if soft.domain == "software":
+        soft.domain = "general"
 
     if getattr(soft, "complexity", None) and soft.complexity != "unknown":
         complexity = soft.complexity
     else:
         complexity = infer_complexity(prompt, estimated_tokens, soft)
-    
-    # User request: When task is detected as complex/difficult, increase the difficulty (risk) tier
-    if complexity == "high" and soft.risk_tier in {"low", "medium"}:
-        soft.risk_tier = "high"
+        
+    if "audio" in input_formats:
+        soft.primary_family = "audio"
+        if "audio" not in soft.required_stages:
+            soft.required_stages.insert(0, "audio")
+
+    # Only escalate risk for complex tasks in already safety-sensitive domains
+    # (prevents coding/math tasks from being falsely escalated to high risk)
+    if complexity == "high" and soft.domain in {"medical", "legal", "finance", "security"} and soft.risk_tier == "low":
+        soft.risk_tier = "medium"
+
+    # Risk calibration: safe task families in non-sensitive domains default to low risk.
+    # The LR/heuristics may over-predict 'medium' or 'high' when training data is noisy.
+    SAFE_FAMILIES = {"coding", "mathematics", "translation", "summarization",
+                     "extraction", "creative", "chat", "document_qa", "reasoning"}
+    SENSITIVE_DOMAINS = {"medical", "legal", "finance", "security"}
+    if (soft.primary_family in SAFE_FAMILIES
+            and soft.domain not in SENSITIVE_DOMAINS
+            and soft.risk_tier in {"medium", "high"}
+            and soft.risk_type not in {"regulated_advice", "security_sensitive", "pii_sensitive"}):
+        soft.risk_tier = "low"
+
         
     workflow_profile = infer_workflow_profile(soft.primary_family, soft.domain, input_formats, prompt, complexity)
     requires_verifier = (
@@ -267,9 +314,10 @@ def parse_task_request(
         or rc.mandatory_verifier
     )
     safety_sensitive = soft.risk_tier == "high" or soft.risk_type in {"regulated_advice", "security_sensitive"}
+    if rc.no_web_access and rc.require_web_search:
+        raise ValueError("Contradictory constraints: no_web_access and require_web_search cannot both be true.")
     if rc.no_web_access:
         hard["requires_web_search"] = False
-
     return TaskFeatures(
         raw_prompt=prompt,
         input_formats=sorted(set(input_formats) | {"text"}),

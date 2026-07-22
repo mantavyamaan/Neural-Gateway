@@ -87,7 +87,8 @@ def generate_multi_stage_plan(
         best, fallbacks = select_best_for_stage(models, stage_name, task)
         if best is None:
             return None
-        s_latency = estimate_request_latency_ms(best, task, n_stages=1) / max(n_stages, 1)
+        # Each stage has its own full TTFT — do NOT divide by n_stages
+        s_latency = estimate_request_latency_ms(best, task)
         s_cost = estimate_request_cost_usd(best, in_per_stage, out_per_stage)
         total_latency += s_latency
         total_cost += s_cost
@@ -105,10 +106,20 @@ def generate_multi_stage_plan(
             explanation=f"Stage '{stage_name}' assigned to {best['name']} (best stage fit).",
         ))
 
+    rc = task.request_constraints
+    max_cost = rc.max_cost_usd if rc else None
+    
+    final_verifiers = []
     for v in verifier_models:
-        total_latency += (v.get("ops_dynamic") or {}).get("recent_latency_ms", 200) * 0.5
-        # Verifier only produces a brief review (not the full task output) — use 300 tokens as output estimate
-        total_cost += estimate_request_cost_usd(v, out_per_stage, 300)
+        v_latency = (v.get("ops_dynamic") or {}).get("recent_latency_ms", 200) * 0.5
+        v_cost = estimate_request_cost_usd(v, out_per_stage, 300)
+        
+        if max_cost is not None and (total_cost + v_cost) > max_cost:
+            continue
+            
+        total_latency += v_latency
+        total_cost += v_cost
+        final_verifiers.append(v)
 
     expected_quality = float(np.mean(stage_quality_scores)) if stage_quality_scores else 0.0
     utility = float(np.mean(stage_utilities)) if stage_utilities else 0.0
@@ -119,7 +130,7 @@ def generate_multi_stage_plan(
         selected_model=None,
         stage_routes=stage_routes,
         fallback_models=[],
-        verifier_models=[v["name"] for v in verifier_models],
+        verifier_models=[v["name"] for v in final_verifiers],
         expected_latency_ms=total_latency,
         expected_cost_usd=total_cost,
         expected_quality=expected_quality,
@@ -136,7 +147,7 @@ def generate_multi_stage_plan(
             "domain": task.domain,
             "risk_tier": task.risk_tier,
             "workflow_profile": task.workflow_profile,
-            "verifiers_attached": [v["name"] for v in verifier_models],
+            "verifiers_attached": [v["name"] for v in final_verifiers],
             "policy_notes": policy.notes,
             "note": "Per-stage specialization; sequential latency is additive.",
         },
@@ -161,8 +172,10 @@ def generate_single_model_plan(
     profile_name: str,
     cascade_strategy: Optional[str] = None,
 ) -> ExecutionPlan:
+    from app.core.scoring import predict_output_tokens
     est_latency = estimate_request_latency_ms(model, task)
-    est_cost = estimate_request_cost_usd(model, task.estimated_tokens, task.estimated_output_tokens)
+    pred_output = predict_output_tokens(task)
+    est_cost = estimate_request_cost_usd(model, task.estimated_tokens, pred_output)
     stage_routes = []
     n_stages = max(len(task.required_stages), 1)
 
@@ -179,11 +192,20 @@ def generate_single_model_plan(
             explanation=f"Stage '{stage_name}' handled by {model['name']}.",
         ))
 
+    rc = task.request_constraints
+    max_cost = rc.max_cost_usd if rc else None
+    
+    final_verifiers = []
     for v in verifier_models:
         v_latency = (v.get("ops_dynamic") or {}).get("recent_latency_ms", 200) * 0.5
         v_cost = estimate_request_cost_usd(v, task.estimated_output_tokens, 500)
+        
+        if max_cost is not None and (est_cost + v_cost) > max_cost:
+            continue
+            
         est_latency += v_latency
         est_cost += v_cost
+        final_verifiers.append(v)
 
     return ExecutionPlan(
         plan_id=str(uuid.uuid4())[:12],
@@ -191,7 +213,7 @@ def generate_single_model_plan(
         selected_model=model["name"],
         stage_routes=stage_routes,
         fallback_models=[fb["name"] for fb in fallback_models[:3]],
-        verifier_models=[v["name"] for v in verifier_models],
+        verifier_models=[v["name"] for v in final_verifiers],
         expected_latency_ms=est_latency,
         expected_cost_usd=est_cost,
         expected_quality=model["q"]["runtime_adjusted_mean"],
@@ -208,7 +230,7 @@ def generate_single_model_plan(
             "risk_tier": task.risk_tier,
             "workflow_profile": task.workflow_profile,
             "stages": task.required_stages,
-            "verifiers_attached": [v["name"] for v in verifier_models],
+            "verifiers_attached": [v["name"] for v in final_verifiers],
             "policy_notes": policy.notes,
             "quality_breakdown": {
                 "family_fit": model["q"]["family_fit"],

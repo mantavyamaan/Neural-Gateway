@@ -147,9 +147,40 @@ class FeedbackRequest(StrictModel):
     prompt: str = Field(..., description="The user's original prompt.")
     correct_family: str = Field(..., description="The correct routing family.")
 
+from typing import Literal
+
 class TrainParserRequest(StrictModel):
     prompt: str = Field(..., description="The prompt to train on")
-    primary_family: str = Field(..., description="The target family")
-    domain: str = Field(..., description="The target domain")
-    risk_tier: str = Field(..., description="The target risk tier")
-    complexity: str = Field(default="low", description="The target complexity tier")
+    primary_family: Literal['chat', 'translation', 'ocr', 'coding', 'audio', 'video_generation', 'reasoning', 'mathematics', 'image_generation', 'document_qa', 'agent', 'summarization']
+    domain: Literal['general', 'finance', 'medical', 'software', 'hrm', 'legal', 'security']
+    risk_tier: Literal['extreme', 'medium', 'high', 'low']
+    complexity: Literal['high', 'medium', 'low'] = Field(default="low", description="The target complexity tier")
+class PricingIn(StrictModel):
+    input_cost: float = Field(default=0.0, ge=0.0)
+    output_cost: float = Field(default=0.0, ge=0.0)
+
+class ContextIn(StrictModel):
+    window: int = Field(default=8000, ge=1)
+
+class PriorsIn(StrictModel):
+    latency_ema: float = Field(default=1000.0, ge=0.0)
+    cost_ema: float = Field(default=0.01, ge=0.0)
+    quality_ema: float = Field(default=0.5, ge=0.0, le=1.0)
+    success_rate: float = Field(default=0.9, ge=0.0, le=1.0)
+    samples: int = Field(default=0, ge=0)
+    utility: float = Field(default=0.5, ge=0.0, le=1.0)
+    safety_rate: float = Field(default=0.99, ge=0.0, le=1.0)
+    
+class RegistryModelIn(StrictModel):
+    name: str
+    provider: str
+    tier: str
+    ops_dynamic: Dict[str, bool]
+    pricing: PricingIn
+    context: ContextIn
+    priors: PriorsIn
+    api_available: bool = True
+    open_weight: bool = False
+    allowed_regions: List[str] = ["global"]
+    modalities: Dict[str, bool] = {"text": True}
+    capabilities: Dict[str, bool] = {}

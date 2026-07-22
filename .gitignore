@@ -11,3 +11,12 @@ env/
 *.log
 dist/
 build/
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+data/uploads/
+.embed_cache/
+scratch/
+test_and_train_parser.py
+test_verifiers.py

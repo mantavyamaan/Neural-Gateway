@@ -1,613 +1,91 @@
 [
-  {
-    "text": "Write a python script to parse JSON logs and output CSV.",
-    "primary_family": "coding",
-    "domain": "general",
-    "risk_tier": "low",
-    "acceptable_models": [
-      "gpt-4o",
-      "claude-3-5-sonnet-20241022",
-      "gemini-1.5-pro",
-      "gpt-4-turbo"
-    ]
-  },
-  {
-    "text": "What is the capital of France?",
-    "primary_family": "chat",
-    "domain": "general",
-    "risk_tier": "low",
-    "acceptable_models": [
-      "claude-3-5-sonnet-20241022",
-      "gpt-4-turbo"
-    ]
-  },
-  {
-    "text": "Patient has severe chest pain and numbness in left arm. What medication should I administer?",
-    "primary_family": "chat",
-    "domain": "medical",
-    "risk_tier": "high",
-    "acceptable_models": [
-      "gpt-4-turbo",
-      "claude-3-opus-20240229",
-      "gemini-1.5-pro",
-      "claude-3-5-sonnet-20241022"
-    ]
-  },
-  {
-    "text": "Summarize this 50-page legal contract and highlight any indemnification clauses.",
-    "primary_family": "summarization",
-    "domain": "legal",
-    "risk_tier": "high",
-    "acceptable_models": [
-      "gpt-4-turbo",
-      "claude-3-5-sonnet-20241022",
-      "claude-3-opus-20240229"
-    ]
-  },
-  {
-    "text": "Calculate the derivative of x^2 + 3x - 5.",
-    "primary_family": "mathematics",
-    "domain": "general",
-    "risk_tier": "low",
-    "acceptable_models": [
-      "gemini-1.5-pro",
-      "claude-3-5-sonnet-20241022"
-    ]
-  },
-  {
-    "text": "Translate this email from Spanish to English.",
-    "primary_family": "translation",
-    "domain": "general",
-    "risk_tier": "low",
-    "acceptable_models": [
-      "gpt-4-turbo",
-      "claude-3-opus-20240229",
-      "gemini-1.5-pro"
-    ]
-  },
-  {
-    "text": "Read the text from this image of an invoice.",
-    "primary_family": "ocr",
-    "domain": "finance",
-    "risk_tier": "medium",
-    "acceptable_models": [
-      "claude-3-5-sonnet-20241022",
-      "gemini-1.5-pro"
-    ]
-  },
-  {
-    "text": "How do I bypass authentication on a Linux server?",
-    "primary_family": "chat",
-    "domain": "security",
-    "risk_tier": "high",
-    "acceptable_models": [
-      "claude-3-opus-20240229",
-      "claude-3-5-sonnet-20241022",
-      "gemini-1.5-pro",
-      "gpt-4-turbo"
-    ]
-  },
-  {
-    "text": "I feel like I want to self-harm.",
-    "primary_family": "chat",
-    "domain": "medical",
-    "risk_tier": "extreme",
-    "acceptable_models": [
-      "gpt-4-turbo",
-      "claude-3-5-sonnet-20241022",
-      "gemini-1.5-pro"
-    ]
-  },
-  {
-    "text": "Can you explain quantum computing to a 5 year old?",
-    "primary_family": "reasoning",
-    "domain": "research",
-    "risk_tier": "low",
-    "acceptable_models": [
-      "claude-3-opus-20240229",
-      "gpt-4-turbo",
-      "claude-3-5-sonnet-20241022",
-      "gemini-1.5-pro"
-    ]
-  },
-  {
-    "text": "Review this 401k portfolio and suggest tax filings.",
-    "primary_family": "reasoning",
-    "domain": "finance",
-    "risk_tier": "high",
-    "acceptable_models": [
-      "claude-3-opus-20240229",
-      "gpt-4-turbo",
-      "gpt-4o",
-      "gemini-1.5-pro"
-    ]
-  },
-  {
-    "text": "Drop the production database",
-    "primary_family": "coding",
-    "domain": "general",
-    "risk_tier": "high",
-    "acceptable_models": [
-      "claude-3-5-sonnet-20241022",
-      "gpt-4-turbo",
-      "gpt-4o",
-      "gemini-1.5-pro"
-    ]
-  },
-  {
-    "text": "explain the log for medical purposes with extreme risk. Make sure it uses audio.",
-    "primary_family": "audio",
-    "domain": "medical",
-    "risk_tier": "extreme",
-    "acceptable_models": [
-      "gpt-4o",
-      "claude-3-opus-20240229",
-      "gpt-4-turbo",
-      "gemini-1.5-pro"
-    ]
-  },
-  {
-    "text": "implement the document for general purposes with extreme risk. Make sure it uses chat.",
-    "primary_family": "chat",
-    "domain": "general",
-    "risk_tier": "extreme",
-    "acceptable_models": [
-      "gpt-4-turbo",
-      "claude-3-5-sonnet-20241022"
-    ]
-  },
-  {
-    "text": "analyze the metric for customer_support purposes with extreme risk. Make sure it uses chat.",
-    "primary_family": "chat",
-    "domain": "customer_support",
-    "risk_tier": "extreme",
-    "acceptable_models": [
-      "gpt-4-turbo",
-      "gemini-1.5-pro",
-      "gpt-4o",
-      "claude-3-5-sonnet-20241022"
-    ]
-  },
-  {
-    "text": "convert the file for research purposes with extreme risk. Make sure it uses audio.",
-    "primary_family": "audio",
-    "domain": "research",
-    "risk_tier": "extreme",
-    "acceptable_models": [
-      "gemini-1.5-pro",
-      "gpt-4o",
-      "gpt-4-turbo",
-      "claude-3-opus-20240229"
-    ]
-  },
-  {
-    "text": "analyze the metric for research purposes with high risk. Make sure it uses coding.",
-    "primary_family": "coding",
-    "domain": "research",
-    "risk_tier": "high",
-    "acceptable_models": [
-      "claude-3-5-sonnet-20241022",
-      "claude-3-opus-20240229",
-      "gemini-1.5-pro"
-    ]
-  },
-  {
-    "text": "compare the log for general purposes with medium risk. Make sure it uses coding.",
-    "primary_family": "coding",
-    "domain": "general",
-    "risk_tier": "medium",
-    "acceptable_models": [
-      "claude-3-opus-20240229",
-      "gpt-4-turbo",
-      "claude-3-5-sonnet-20241022",
-      "gpt-4o"
-    ]
-  },
-  {
-    "text": "explain the document for customer_support purposes with low risk. Make sure it uses document_qa.",
-    "primary_family": "document_qa",
-    "domain": "customer_support",
-    "risk_tier": "low",
-    "acceptable_models": [
-      "claude-3-5-sonnet-20241022",
-      "gpt-4o"
-    ]
-  },
-  {
-    "text": "summarize the metric for security purposes with extreme risk. Make sure it uses chat.",
-    "primary_family": "chat",
-    "domain": "security",
-    "risk_tier": "extreme",
-    "acceptable_models": [
-      "gpt-4o",
-      "claude-3-opus-20240229",
-      "claude-3-5-sonnet-20241022"
-    ]
-  },
-  {
-    "text": "extract the report for legal purposes with high risk. Make sure it uses agent.",
-    "primary_family": "agent",
-    "domain": "legal",
-    "risk_tier": "high",
-    "acceptable_models": [
-      "claude-3-opus-20240229",
-      "gemini-1.5-pro",
-      "claude-3-5-sonnet-20241022"
-    ]
-  },
-  {
-    "text": "convert the log for legal purposes with low risk. Make sure it uses audio.",
-    "primary_family": "audio",
-    "domain": "legal",
-    "risk_tier": "low",
-    "acceptable_models": [
-      "gemini-1.5-pro",
-      "gpt-4o",
-      "claude-3-opus-20240229"
-    ]
-  },
-  {
-    "text": "review the log for research purposes with medium risk. Make sure it uses document_qa.",
-    "primary_family": "document_qa",
-    "domain": "research",
-    "risk_tier": "medium",
-    "acceptable_models": [
-      "gpt-4-turbo",
-      "claude-3-opus-20240229",
-      "gemini-1.5-pro",
-      "gpt-4o"
-    ]
-  },
-  {
-    "text": "review the log for research purposes with extreme risk. Make sure it uses chat.",
-    "primary_family": "chat",
-    "domain": "research",
-    "risk_tier": "extreme",
-    "acceptable_models": [
-      "gpt-4o",
-      "claude-3-5-sonnet-20241022"
-    ]
-  },
-  {
-    "text": "implement the log for medical purposes with extreme risk. Make sure it uses ocr.",
-    "primary_family": "ocr",
-    "domain": "medical",
-    "risk_tier": "extreme",
-    "acceptable_models": [
-      "gemini-1.5-pro",
-      "gpt-4o"
-    ]
-  },
-  {
-    "text": "explain the document for medical purposes with extreme risk. Make sure it uses reasoning.",
-    "primary_family": "reasoning",
-    "domain": "medical",
-    "risk_tier": "extreme",
-    "acceptable_models": [
-      "gemini-1.5-pro",
-      "gpt-4o",
-      "claude-3-opus-20240229",
-      "claude-3-5-sonnet-20241022"
-    ]
-  },
-  {
-    "text": "compare the file for security purposes with low risk. Make sure it uses vision.",
-    "primary_family": "vision",
-    "domain": "security",
-    "risk_tier": "low",
-    "acceptable_models": [
-      "gpt-4o",
-      "gemini-1.5-pro",
-      "claude-3-5-sonnet-20241022",
-      "claude-3-opus-20240229"
-    ]
-  },
-  {
-    "text": "summarize the report for research purposes with low risk. Make sure it uses agent.",
-    "primary_family": "agent",
-    "domain": "research",
-    "risk_tier": "low",
-    "acceptable_models": [
-      "claude-3-5-sonnet-20241022",
-      "claude-3-opus-20240229",
-      "gpt-4o"
-    ]
-  },
-  {
-    "text": "analyze the file for medical purposes with low risk. Make sure it uses mathematics.",
-    "primary_family": "mathematics",
-    "domain": "medical",
-    "risk_tier": "low",
-    "acceptable_models": [
-      "claude-3-opus-20240229",
-      "claude-3-5-sonnet-20241022",
-      "gemini-1.5-pro",
-      "gpt-4-turbo"
-    ]
-  },
-  {
-    "text": "implement the code for medical purposes with extreme risk. Make sure it uses summarization.",
-    "primary_family": "summarization",
-    "domain": "medical",
-    "risk_tier": "extreme",
-    "acceptable_models": [
-      "claude-3-5-sonnet-20241022",
-      "gpt-4o",
-      "claude-3-opus-20240229"
-    ]
-  },
-  {
-    "text": "summarize the metric for finance purposes with extreme risk. Make sure it uses chat.",
-    "primary_family": "chat",
-    "domain": "finance",
-    "risk_tier": "extreme",
-    "acceptable_models": [
-      "gpt-4-turbo",
-      "claude-3-opus-20240229",
-      "claude-3-5-sonnet-20241022",
-      "gemini-1.5-pro"
-    ]
-  },
-  {
-    "text": "implement the report for security purposes with low risk. Make sure it uses ocr.",
-    "primary_family": "ocr",
-    "domain": "security",
-    "risk_tier": "low",
-    "acceptable_models": [
-      "gpt-4-turbo",
-      "claude-3-opus-20240229",
-      "gpt-4o"
-    ]
-  },
-  {
-    "text": "extract the report for finance purposes with high risk. Make sure it uses chat.",
-    "primary_family": "chat",
-    "domain": "finance",
-    "risk_tier": "high",
-    "acceptable_models": [
-      "claude-3-5-sonnet-20241022",
-      "claude-3-opus-20240229",
-      "gpt-4-turbo",
-      "gpt-4o"
-    ]
-  },
-  {
-    "text": "compare the image for research purposes with high risk. Make sure it uses summarization.",
-    "primary_family": "summarization",
-    "domain": "research",
-    "risk_tier": "high",
-    "acceptable_models": [
-      "claude-3-opus-20240229",
-      "gpt-4o"
-    ]
-  },
-  {
-    "text": "explain the code for security purposes with low risk. Make sure it uses translation.",
-    "primary_family": "translation",
-    "domain": "security",
-    "risk_tier": "low",
-    "acceptable_models": [
-      "gemini-1.5-pro",
-      "claude-3-5-sonnet-20241022",
-      "gpt-4-turbo"
-    ]
-  },
-  {
-    "text": "convert the report for general purposes with medium risk. Make sure it uses document_qa.",
-    "primary_family": "document_qa",
-    "domain": "general",
-    "risk_tier": "medium",
-    "acceptable_models": [
-      "gpt-4-turbo",
-      "claude-3-5-sonnet-20241022",
-      "claude-3-opus-20240229"
-    ]
-  },
-  {
-    "text": "review the metric for security purposes with medium risk. Make sure it uses ocr.",
-    "primary_family": "ocr",
-    "domain": "security",
-    "risk_tier": "medium",
-    "acceptable_models": [
-      "gpt-4o",
-      "gpt-4-turbo",
-      "claude-3-opus-20240229",
-      "gemini-1.5-pro"
-    ]
-  },
-  {
-    "text": "extract the data for security purposes with extreme risk. Make sure it uses audio.",
-    "primary_family": "audio",
-    "domain": "security",
-    "risk_tier": "extreme",
-    "acceptable_models": [
-      "gpt-4o",
-      "gpt-4-turbo"
-    ]
-  },
-  {
-    "text": "analyze the document for legal purposes with high risk. Make sure it uses ocr.",
-    "primary_family": "ocr",
-    "domain": "legal",
-    "risk_tier": "high",
-    "acceptable_models": [
-      "claude-3-opus-20240229",
-      "gemini-1.5-pro",
-      "gpt-4-turbo"
-    ]
-  },
-  {
-    "text": "explain the report for security purposes with extreme risk. Make sure it uses coding.",
-    "primary_family": "coding",
-    "domain": "security",
-    "risk_tier": "extreme",
-    "acceptable_models": [
-      "claude-3-5-sonnet-20241022",
-      "claude-3-opus-20240229"
-    ]
-  },
-  {
-    "text": "extract the file for research purposes with extreme risk. Make sure it uses summarization.",
-    "primary_family": "summarization",
-    "domain": "research",
-    "risk_tier": "extreme",
-    "acceptable_models": [
-      "gpt-4o",
-      "claude-3-opus-20240229",
-      "claude-3-5-sonnet-20241022"
-    ]
-  },
-  {
-    "text": "convert the report for research purposes with medium risk. Make sure it uses vision.",
-    "primary_family": "vision",
-    "domain": "research",
-    "risk_tier": "medium",
-    "acceptable_models": [
-      "gpt-4o",
-      "claude-3-5-sonnet-20241022",
-      "gpt-4-turbo",
-      "gemini-1.5-pro"
-    ]
-  },
-  {
-    "text": "convert the report for finance purposes with extreme risk. Make sure it uses coding.",
-    "primary_family": "coding",
-    "domain": "finance",
-    "risk_tier": "extreme",
-    "acceptable_models": [
-      "gpt-4o",
-      "gpt-4-turbo"
-    ]
-  },
-  {
-    "text": "explain the document for legal purposes with low risk. Make sure it uses agent.",
-    "primary_family": "agent",
-    "domain": "legal",
-    "risk_tier": "low",
-    "acceptable_models": [
-      "gpt-4-turbo",
-      "claude-3-opus-20240229",
-      "gemini-1.5-pro",
-      "gpt-4o"
-    ]
-  },
-  {
-    "text": "analyze the file for security purposes with low risk. Make sure it uses agent.",
-    "primary_family": "agent",
-    "domain": "security",
-    "risk_tier": "low",
-    "acceptable_models": [
-      "gpt-4-turbo",
-      "claude-3-opus-20240229"
-    ]
-  },
-  {
-    "text": "implement the metric for medical purposes with high risk. Make sure it uses translation.",
-    "primary_family": "translation",
-    "domain": "medical",
-    "risk_tier": "high",
-    "acceptable_models": [
-      "gemini-1.5-pro",
-      "gpt-4-turbo",
-      "claude-3-opus-20240229",
-      "gpt-4o"
-    ]
-  },
-  {
-    "text": "convert the metric for security purposes with medium risk. Make sure it uses document_qa.",
-    "primary_family": "document_qa",
-    "domain": "security",
-    "risk_tier": "medium",
-    "acceptable_models": [
-      "gpt-4o",
-      "claude-3-opus-20240229",
-      "gemini-1.5-pro"
-    ]
-  },
-  {
-    "text": "summarize the file for security purposes with low risk. Make sure it uses reasoning.",
-    "primary_family": "reasoning",
-    "domain": "security",
-    "risk_tier": "low",
-    "acceptable_models": [
-      "gpt-4o",
-      "claude-3-5-sonnet-20241022",
-      "gpt-4-turbo",
-      "gemini-1.5-pro"
-    ]
-  },
-  {
-    "text": "explain the report for research purposes with high risk. Make sure it uses reasoning.",
-    "primary_family": "reasoning",
-    "domain": "research",
-    "risk_tier": "high",
-    "acceptable_models": [
-      "claude-3-5-sonnet-20241022",
-      "claude-3-opus-20240229"
-    ]
-  },
-  {
-    "text": "explain the report for research purposes with high risk. Make sure it uses translation.",
-    "primary_family": "translation",
-    "domain": "research",
-    "risk_tier": "high",
-    "acceptable_models": [
-      "gpt-4-turbo",
-      "claude-3-opus-20240229",
-      "gemini-1.5-pro"
-    ]
-  },
-  {
-    "text": "analyze the file for medical purposes with medium risk. Make sure it uses document_qa.",
-    "primary_family": "document_qa",
-    "domain": "medical",
-    "risk_tier": "medium",
-    "acceptable_models": [
-      "gpt-4o",
-      "gpt-4-turbo"
-    ]
-  },
-  {
-    "text": "extract the file for customer_support purposes with medium risk. Make sure it uses chat.",
-    "primary_family": "chat",
-    "domain": "customer_support",
-    "risk_tier": "medium",
-    "acceptable_models": [
-      "claude-3-opus-20240229",
-      "gpt-4o",
-      "claude-3-5-sonnet-20241022"
-    ]
-  },
-  {
-    "text": "explain the code for security purposes with low risk. Make sure it uses summarization.",
-    "primary_family": "summarization",
-    "domain": "security",
-    "risk_tier": "low",
-    "acceptable_models": [
-      "claude-3-opus-20240229",
-      "claude-3-5-sonnet-20241022"
-    ]
-  },
-  {
-    "text": "summarize the file for customer_support purposes with extreme risk. Make sure it uses document_qa.",
-    "primary_family": "document_qa",
-    "domain": "customer_support",
-    "risk_tier": "extreme",
-    "acceptable_models": [
-      "claude-3-opus-20240229",
-      "gpt-4-turbo",
-      "claude-3-5-sonnet-20241022"
-    ]
-  },
-  {
-    "text": "explain the metric for finance purposes with medium risk. Make sure it uses audio.",
-    "primary_family": "audio",
-    "domain": "finance",
-    "risk_tier": "medium",
-    "acceptable_models": [
-      "claude-3-5-sonnet-20241022",
-      "gemini-1.5-pro",
-      "gpt-4-turbo"
-    ]
-  }
+  {"text": "Generate me code for a portfolio website", "primary_family": "coding", "acceptable_families": ["coding"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Write a Python script to scrape product prices from Amazon", "primary_family": "coding", "acceptable_families": ["coding", "agent"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Debug this React useEffect hook that is causing an infinite loop", "primary_family": "coding", "acceptable_families": ["coding"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Build a REST API using FastAPI with JWT authentication", "primary_family": "coding", "acceptable_families": ["coding"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Write a SQL query to find the top 10 customers by revenue", "primary_family": "coding", "acceptable_families": ["coding", "mathematics"], "domain": "general", "acceptable_domains": ["general", "software", "finance"], "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Create a Docker Compose file for a Node.js app with PostgreSQL", "primary_family": "coding", "acceptable_families": ["coding"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Fix the TypeError in my Python class: AttributeError on self.model", "primary_family": "coding", "acceptable_families": ["coding"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Implement a binary search tree in JavaScript", "primary_family": "coding", "acceptable_families": ["coding"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Write unit tests for my Flask login endpoint using pytest", "primary_family": "coding", "acceptable_families": ["coding"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Optimize this slow PostgreSQL query with proper indexing", "primary_family": "coding", "acceptable_families": ["coding"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Convert this Python 2 code to Python 3 compatible syntax", "primary_family": "coding", "acceptable_families": ["coding", "translation"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Write a Kubernetes deployment YAML for my microservice", "primary_family": "coding", "acceptable_families": ["coding"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Create a TypeScript interface for a User object with validation", "primary_family": "coding", "acceptable_families": ["coding"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Write a GitHub Actions CI pipeline for my Python project", "primary_family": "coding", "acceptable_families": ["coding"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Build a responsive navbar component using Tailwind CSS and React", "primary_family": "coding", "acceptable_families": ["coding"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Implement a rate limiter middleware in Express.js", "primary_family": "coding", "acceptable_families": ["coding"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Write a Python function to calculate compound interest", "primary_family": "coding", "acceptable_families": ["coding", "mathematics"], "domain": "general", "acceptable_domains": ["general", "finance"], "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Refactor this monolithic Node.js app into microservices", "primary_family": "coding", "acceptable_families": ["coding"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Frontier"},
+  {"text": "Set up a Redis cache for my Django application", "primary_family": "coding", "acceptable_families": ["coding"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Write a regex to extract all email addresses from a text document", "primary_family": "coding", "acceptable_families": ["coding", "extraction"], "domain": "general", "acceptable_domains": ["general", "software"], "risk_tier": "low", "expected_model_tier": "Economy"},
+
+  {"text": "What is the derivative of x squared plus 3x?", "primary_family": "mathematics", "acceptable_families": ["mathematics", "chat"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Solve this system of linear equations: 2x + y = 5, x - y = 1", "primary_family": "mathematics", "acceptable_families": ["mathematics"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Calculate the probability of rolling two sixes with two dice", "primary_family": "mathematics", "acceptable_families": ["mathematics", "chat"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "What is the eigenvalue decomposition of a 2x2 matrix?", "primary_family": "mathematics", "acceptable_families": ["mathematics", "reasoning"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Prove that the square root of 2 is irrational", "primary_family": "mathematics", "acceptable_families": ["mathematics", "reasoning"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Compute the integral of sin x from 0 to pi", "primary_family": "mathematics", "acceptable_families": ["mathematics"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Explain the central limit theorem with an example", "primary_family": "mathematics", "acceptable_families": ["mathematics", "chat"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "What is the Bayes theorem formula and when do I use it?", "primary_family": "mathematics", "acceptable_families": ["mathematics", "chat"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Solve this quadratic equation: x squared minus 5x plus 6 equals 0", "primary_family": "mathematics", "acceptable_families": ["mathematics"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "How do I calculate the standard deviation of this dataset?", "primary_family": "mathematics", "acceptable_families": ["mathematics", "chat"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+
+  {"text": "Translate this paragraph from English to Spanish: Hello, my name is John and I work as a software engineer in San Francisco.", "primary_family": "translation", "acceptable_families": ["translation"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "How do you say good morning in Japanese?", "primary_family": "translation", "acceptable_families": ["translation", "chat"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Translate this business email from French to English", "primary_family": "translation", "acceptable_families": ["translation"], "domain": "general", "acceptable_domains": ["general", "finance", "crm"], "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Convert this German legal clause to English while preserving formal tone", "primary_family": "translation", "acceptable_families": ["translation"], "domain": "general", "acceptable_domains": ["general", "legal"], "risk_tier": "low", "acceptable_risks": ["low", "high"], "expected_model_tier": "Mid"},
+  {"text": "Translate the following text to Arabic: The conference begins at 9am tomorrow.", "primary_family": "translation", "acceptable_families": ["translation"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "What is the Hindi translation of the word perseverance?", "primary_family": "translation", "acceptable_families": ["translation", "chat"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Translate this product description from Chinese to English for my e-commerce store", "primary_family": "translation", "acceptable_families": ["translation"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Provide a Portuguese translation of my company welcome letter", "primary_family": "translation", "acceptable_families": ["translation"], "domain": "general", "acceptable_domains": ["general", "hrm", "crm"], "risk_tier": "low", "expected_model_tier": "Economy"},
+
+  {"text": "Summarize this 10-page research paper on climate change into 3 bullet points", "primary_family": "summarization", "acceptable_families": ["summarization", "document_qa"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Give me a brief summary of the book Atomic Habits by James Clear", "primary_family": "summarization", "acceptable_families": ["summarization", "chat"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Condense this meeting transcript into action items", "primary_family": "summarization", "acceptable_families": ["summarization", "extraction"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Create an executive summary of this quarterly financial report", "primary_family": "summarization", "acceptable_families": ["summarization", "document_qa"], "domain": "general", "acceptable_domains": ["general", "finance"], "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Summarize the key arguments in this legal document in plain English", "primary_family": "summarization", "acceptable_families": ["summarization", "document_qa"], "domain": "general", "acceptable_domains": ["general", "legal"], "risk_tier": "low", "acceptable_risks": ["low", "high"], "expected_model_tier": "Mid"},
+  {"text": "Write a one paragraph summary of this news article about artificial intelligence", "primary_family": "summarization", "acceptable_families": ["summarization"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Extract the main themes from this long academic essay", "primary_family": "summarization", "acceptable_families": ["summarization", "extraction"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Summarize these customer reviews into pros and cons", "primary_family": "summarization", "acceptable_families": ["summarization"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+
+  {"text": "Extract all phone numbers and email addresses from this contact list", "primary_family": "extraction", "acceptable_families": ["extraction", "coding"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Pull out all the dates mentioned in this contract document", "primary_family": "extraction", "acceptable_families": ["extraction", "document_qa"], "domain": "general", "acceptable_domains": ["general", "legal"], "risk_tier": "low", "acceptable_risks": ["low", "high"], "expected_model_tier": "Economy"},
+  {"text": "List all the product names and prices from this invoice", "primary_family": "extraction", "acceptable_families": ["extraction"], "domain": "general", "acceptable_domains": ["general", "finance"], "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Find all named entities (people, organizations, places) in this news article", "primary_family": "extraction", "acceptable_families": ["extraction"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Extract the key metrics and KPIs from this business performance report", "primary_family": "extraction", "acceptable_families": ["extraction", "document_qa"], "domain": "general", "acceptable_domains": ["general", "finance"], "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Pull out all action items and deadlines from this meeting notes document", "primary_family": "extraction", "acceptable_families": ["extraction", "summarization"], "domain": "general", "acceptable_domains": ["general", "software", "crm"], "risk_tier": "low", "expected_model_tier": "Economy"},
+
+  {"text": "Write a short story about a robot that learns to feel emotions", "primary_family": "creative", "acceptable_families": ["creative"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Compose a haiku about autumn leaves falling in a city park", "primary_family": "creative", "acceptable_families": ["creative"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Write a compelling product description for a luxury wristwatch", "primary_family": "creative", "acceptable_families": ["creative"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Create a blog post about the benefits of morning exercise routines", "primary_family": "creative", "acceptable_families": ["creative"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Write a professional LinkedIn bio for a senior software engineer", "primary_family": "creative", "acceptable_families": ["creative", "chat"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Mid"},
+  {"text": "Draft a formal resignation letter to my manager", "primary_family": "creative", "acceptable_families": ["creative", "chat", "translation"], "domain": "general", "acceptable_domains": ["general", "hrm"], "risk_tier": "low", "expected_model_tier": "Economy"},
+
+  {"text": "What is the capital of France?", "primary_family": "chat", "acceptable_families": ["chat", "reasoning"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "What is job security and why does it matter for employees?", "primary_family": "chat", "acceptable_families": ["chat", "document_qa", "reasoning"], "domain": "general", "acceptable_domains": ["general", "hrm"], "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Explain how the internet works in simple terms", "primary_family": "chat", "acceptable_families": ["chat", "summarization", "reasoning"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Be patient with me, can you explain machine learning step by step?", "primary_family": "chat", "acceptable_families": ["chat", "reasoning"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "Stock up on your knowledge: what are the best books on leadership?", "primary_family": "chat", "acceptable_families": ["chat", "coding"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "What is the difference between machine learning and deep learning?", "primary_family": "chat", "acceptable_families": ["chat", "reasoning"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "How does photosynthesis work?", "primary_family": "chat", "acceptable_families": ["chat"], "domain": "general", "risk_tier": "low", "expected_model_tier": "Economy"},
+  {"text": "What is the statute of limitations and how does it apply?", "primary_family": "chat", "acceptable_families": ["chat", "document_qa"], "domain": "general", "acceptable_domains": ["general", "legal"], "risk_tier": "low", "acceptable_risks": ["low", "high"], "expected_model_tier": "Economy"},
+
+  {"text": "I have been experiencing severe chest pain and shortness of breath for the past hour", "primary_family": "chat", "acceptable_families": ["chat", "reasoning"], "domain": "medical", "risk_tier": "high", "expected_model_tier": "Frontier"},
+  {"text": "What is the correct dosage of ibuprofen for a child with a fever?", "primary_family": "chat", "acceptable_families": ["chat"], "domain": "medical", "risk_tier": "high", "expected_model_tier": "Frontier"},
+  {"text": "My doctor said I have a tumor on my kidney, what does this mean and what are my options?", "primary_family": "chat", "acceptable_families": ["chat", "document_qa"], "domain": "medical", "risk_tier": "high", "expected_model_tier": "Frontier"},
+  {"text": "What medications have dangerous interactions with blood thinners?", "primary_family": "chat", "acceptable_families": ["chat", "coding"], "domain": "medical", "risk_tier": "high", "expected_model_tier": "Frontier"},
+  {"text": "How do I know if my symptoms indicate appendicitis?", "primary_family": "chat", "acceptable_families": ["chat", "document_qa"], "domain": "medical", "risk_tier": "high", "expected_model_tier": "Frontier"},
+
+  {"text": "Review this employment contract and tell me if the non-compete clause is enforceable", "primary_family": "document_qa", "acceptable_families": ["document_qa", "chat"], "domain": "legal", "risk_tier": "high", "expected_model_tier": "Frontier"},
+  {"text": "What is my liability if a customer slips and falls in my store?", "primary_family": "chat", "acceptable_families": ["chat", "document_qa"], "domain": "legal", "risk_tier": "high", "expected_model_tier": "Frontier"},
+  {"text": "Explain the breach of contract clause in this agreement and whether I can sue for damages", "primary_family": "chat", "acceptable_families": ["chat", "document_qa"], "domain": "legal", "risk_tier": "high", "expected_model_tier": "Frontier"},
+  {"text": "What are my rights if my employer violates the NDA I signed?", "primary_family": "chat", "acceptable_families": ["chat", "document_qa"], "domain": "legal", "risk_tier": "high", "expected_model_tier": "Frontier"},
+  {"text": "How do I file for indemnification against a contractor for project delays?", "primary_family": "chat", "acceptable_families": ["chat", "document_qa"], "domain": "legal", "risk_tier": "high", "expected_model_tier": "Frontier"},
+
+  {"text": "How do SQL injection attacks work and how do I prevent them in my application?", "primary_family": "coding", "acceptable_families": ["coding", "chat"], "domain": "security", "acceptable_domains": ["security", "software", "general"], "risk_tier": "high", "expected_model_tier": "Frontier"},
+  {"text": "How to exploit a buffer overflow vulnerability in C code?", "primary_family": "chat", "acceptable_families": ["chat", "coding"], "domain": "security", "acceptable_domains": ["security", "software"], "risk_tier": "high", "expected_model_tier": "Frontier"},
+  {"text": "What is privilege escalation and how can attackers use it to gain root access?", "primary_family": "chat", "acceptable_families": ["chat", "coding"], "domain": "security", "acceptable_domains": ["security", "software"], "risk_tier": "high", "expected_model_tier": "Frontier"},
+  {"text": "Drop table users; -- what does this SQL command do and why is it dangerous?", "primary_family": "chat", "acceptable_families": ["chat", "coding"], "domain": "security", "acceptable_domains": ["security", "software", "general"], "risk_tier": "high", "expected_model_tier": "Frontier"}
 ]

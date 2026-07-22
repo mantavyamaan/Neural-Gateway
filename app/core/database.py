@@ -6,12 +6,17 @@ import json
 import os
 import sqlite3
 import threading
+import time
 from typing import Any, Dict, List, Optional
 
 DB_PATH = os.getenv("NEURAL_GATEWAY_DB_PATH", "neural_gateway_registry.db")
 
 _lock = threading.Lock()
 _local = threading.local()  # per-thread connection storage for true thread safety
+
+_model_cache: list | None = None
+_model_cache_ts: float = 0.0
+_MODEL_CACHE_TTL: float = 60.0
 
 
 def _get_connection() -> sqlite3.Connection:
@@ -57,6 +62,8 @@ def upsert_model(model: Dict[str, Any]) -> None:
             (model["name"], model["provider"], model["tier"], json.dumps(model)),
         )
         conn.commit()
+    global _model_cache
+    _model_cache = None  # invalidate cache
 
 
 def bulk_upsert_models(models: List[Dict[str, Any]]) -> None:
@@ -76,15 +83,24 @@ def bulk_upsert_models(models: List[Dict[str, Any]]) -> None:
             tuples,
         )
         conn.commit()
+    global _model_cache
+    _model_cache = None  # invalidate cache
 
 
 
 def get_all_models() -> List[Dict[str, Any]]:
-    """Return every model in the registry."""
+    """Return every model in the registry. Served from in-memory cache when fresh."""
+    global _model_cache, _model_cache_ts
+    now = time.time()
+    if _model_cache is not None and (now - _model_cache_ts) < _MODEL_CACHE_TTL:
+        return _model_cache
     with _lock:
         conn = _get_connection()
         rows = conn.execute("SELECT data FROM models").fetchall()
-    return [json.loads(row[0]) for row in rows]
+    result = [json.loads(row[0]) for row in rows]
+    _model_cache = result
+    _model_cache_ts = now
+    return result
 
 
 def get_model(name: str) -> Optional[Dict[str, Any]]:

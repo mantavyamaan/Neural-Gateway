@@ -686,18 +686,34 @@ def get_friendly_reason(raw_data):
         max_lat_v = constraints.get("max_latency_ms")
         reason = "The best available model exceeds your configured limits.\n\n"
         if max_cost_v is not None and est_cost > max_cost_v:
-            reason += f"- **Cost:** Estimated **${est_cost:.4f}** exceeds your cap of **${max_cost_v:.2f}**.\n"
+            reason += f"- **Cost:** Estimated **\\${est_cost:.4f}** exceeds your cap of **\\${max_cost_v:.4f}**.\n"
         if max_lat_v is not None and est_lat > max_lat_v:
             reason += f"- **Latency:** Estimated **{est_lat/1000:.1f}s** exceeds your cap of **{max_lat_v/1000:.1f}s**.\n"
         return reason + "\n*Increase the sliders in the sidebar to allow more capable models.*"
     elif status == "no_feasible_models":
-        msg = "No models in the registry can satisfy this request. The document may be too large, or no model supports the required features (e.g., Web Search, OCR).\n\n"
         dr = raw_data.get("decision_record", {})
         feas = dr.get("feasibility_reasons", {})
+        
+        # Check if all models failed due to latency or budget
+        latency_failures = [v for v in feas.values() if isinstance(v, str) and v.startswith("estimated_latency_exceeds_sla")]
+        budget_failures = [v for v in feas.values() if isinstance(v, str) and (v.startswith("estimated_cost_exceeds_budget") or v.startswith("exceeds_tenant_remaining_budget"))]
+        
+        if len(feas) > 0 and len(latency_failures) == len(feas):
+            est_lat = float(latency_failures[0].split(":")[1])
+            max_lat = max_lat_v if max_lat_v else 0
+            return f"The expected latency for the best available model is higher than your limits.\n\n- **Latency:** Estimated **{est_lat/1000:.1f}s** exceeds your cap of **{max_lat/1000:.1f}s**.\n\n*Increase the max latency slider in the sidebar to allow more capable models.*"
+        elif len(feas) > 0 and len(budget_failures) == len(feas):
+            est_cost = float(budget_failures[0].split(":")[1])
+            max_cost = max_cost_v if max_cost_v else 0
+            return f"The expected cost for the best available model is higher than your limits.\n\n- **Cost:** Estimated **${est_cost:.4f}** exceeds your cap of **${max_cost:.4f}**.\n\n*Increase the max cost slider in the sidebar to allow more capable models.*"
+        
+        msg = "No models in the registry can satisfy this request. The document may be too large, or no model supports the required features (e.g., Web Search, OCR).\n\n"
         if feas:
             msg += "**Why models were excluded:**\n"
             for model, reason in list(feas.items())[:5]:
                 msg += f"- `{model}`: {reason}\n"
+            if len(feas) > 5:
+                msg += f"- *...and {len(feas) - 5} more models.*\n"
         return msg
     elif status == "no_models_after_policy":
         msg = "Models are available, but all were blocked by your active Tenant Policy constraints.\n\n"
@@ -862,7 +878,7 @@ with st.container():
             label_visibility="collapsed"
         )
     with col_btn:
-        st.markdown('<div style="margin-top: 8px;"></div>', unsafe_allow_html=True)
+        st.markdown('<div style="margin-top: 0px;"></div>', unsafe_allow_html=True)
         route_clicked = st.button("⚡ Route Request", type="primary", use_container_width=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -875,25 +891,34 @@ if route_clicked:
         tc = {"tenant_id": tenant_id}
         if allowed_models:
             tc["allowed_models"] = allowed_models
+        est_input = max(1, int(len(prompt) / 4))
+        # Estimate output dynamically to show realistic latency instead of worst-case 1000 tokens
+        est_output = max(50, min(2000, est_input * 2))
 
         payload = {
             "prompt": prompt,
+            "estimated_tokens": est_input,
+            "estimated_output_tokens": est_output,
             "request_constraints": {
                 "require_json":       req_json,
                 "require_ocr":        req_ocr,
                 "require_web_search": req_search,
                 "require_citations":  req_cite,
                 "max_latency_ms":     float(max_latency),
-                "max_cost_usd":       float(max_cost),
+                "max_cost_usd":       float(max_cost) * ((est_input + est_output) / 1_000_000.0),
             },
             "tenant_context": tc,
         }
 
         saved_file_paths = []
         if uploaded_files:
-            temp_dir = tempfile.mkdtemp()
+            import uuid
+            upload_dir = os.path.abspath(os.path.join("data", "uploads"))
+            os.makedirs(upload_dir, exist_ok=True)
             for uf in uploaded_files:
-                fp = os.path.join(temp_dir, uf.name)
+                file_id = uuid.uuid4().hex
+                ext = os.path.splitext(uf.name)[1]
+                fp = os.path.join(upload_dir, file_id + ext)
                 with open(fp, "wb") as f:
                     f.write(uf.getbuffer())
                 saved_file_paths.append(fp)
@@ -1164,6 +1189,8 @@ elif st.session_state.decision:
                         "domain":         correct_domain,
                         "risk_tier":      correct_risk,
                         "complexity":     correct_complexity,
+                    }, headers={
+                        "X-Neural-Gateway-Admin-Key": os.getenv("NEURAL_GATEWAY_ADMIN_API_KEY", "")
                     })
                     if r.status_code == 200:
                         st.toast("✅ Training example submitted — engine updated!", icon="🎉")
@@ -1191,36 +1218,36 @@ elif st.session_state.decision:
         if not openrouter_key:
             st.markdown('<div class="status-banner status-warning">⚠️ Enter your OpenRouter API Key in the sidebar first.</div>', unsafe_allow_html=True)
         else:
-            client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=openrouter_key)
-            response_placeholder = st.empty()
-            full_response = ""
-
-            with st.spinner(f"Generating with {selected_model_id}…"):
+            with st.spinner(f"Executing request through neural gateway backend..."):
                 try:
-                    llm_prompt = st.session_state.get("final_llm_prompt", st.session_state.prompt)
-                    completion = client.chat.completions.create(
-                        model=selected_model_id,
-                        messages=[{"role": "user", "content": llm_prompt}],
-                        stream=True,
-                    )
-                    for chunk in completion:
-                        delta = chunk.choices[0].delta.content
-                        if delta:
-                            full_response += delta
-                            response_placeholder.markdown(
-                                f'<div class="llm-output">{full_response}▌</div>',
-                                unsafe_allow_html=True
-                            )
-
-                    if re.match(r"^https?://[^\s]+$", full_response.strip()):
-                        full_response = f"![Generated Image]({full_response.strip()})"
-                        response_placeholder.markdown(full_response)
+                    import html
+                    payload = {
+                        "prompt": st.session_state.prompt,
+                        "estimated_tokens": int(len(st.session_state.prompt) / 4),
+                    }
+                    req_constraints = {}
+                    if hasattr(st.session_state, 'req_constraints'):
+                        req_constraints = st.session_state.req_constraints
+                    if req_constraints:
+                        payload["request_constraints"] = req_constraints
+                    start_t = time.time()
+                    r = requests.post(f"{API_URL}/execute", json=payload, headers={"x-openrouter-key": openrouter_key})
+                    end_t = time.time()
+                    if r.status_code == 200:
+                        data = r.json()
+                        exec_ms = int((end_t - start_t) * 1000)
+                        st.markdown(f'<div class="status-banner status-success">✅ Generation complete in {exec_ms}ms.</div>', unsafe_allow_html=True)
+                        final_text = data.get("response", "")
+                        safe_text = html.escape(final_text).replace("\\n", "<br>")
+                        st.markdown(f'<div class="llm-output">{safe_text}</div>', unsafe_allow_html=True)
+                        if data.get("multi_stage"):
+                            with st.expander("Multi-Stage Trace"):
+                                st.json(data.get("stages", []))
+                        if data.get("cascaded"):
+                            st.info(f"Cascaded to fallback model: {data.get('model_used')}")
                     else:
-                        response_placeholder.markdown(
-                            f'<div class="llm-output">{full_response}</div>',
-                            unsafe_allow_html=True
-                        )
-                    st.markdown('<div class="status-banner status-success">✅ Generation complete.</div>', unsafe_allow_html=True)
-
+                        safe_err = html.escape(r.text)
+                        st.markdown(f'<div class="status-banner status-error">❌ Execution failed: {r.status_code} {safe_err}</div>', unsafe_allow_html=True)
                 except Exception as e:
-                    st.markdown(f'<div class="status-banner status-error">❌ Execution failed: {str(e)}</div>', unsafe_allow_html=True)
+                    safe_e = html.escape(str(e))
+                    st.markdown(f'<div class="status-banner status-error">❌ Execution failed: {safe_e}</div>', unsafe_allow_html=True)

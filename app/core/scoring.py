@@ -238,29 +238,24 @@ def estimate_request_cost_usd(model: Dict[str, Any], input_tokens: int, output_t
 
 
 def predict_output_tokens(task: TaskFeatures) -> int:
-    """Heuristic regression for output tokens if user estimate is unreliable."""
-    # If the client explicitly provided an estimate (other than the 1200 default), trust it
+    """Dynamic output token prediction based on task characteristics."""
     if task.estimated_output_tokens != 1200:
         return task.estimated_output_tokens
-
-    comp = task.complexity
-    family = task.primary_family
-
-    if family == "coding":
-        return 3500 if comp == "high" else 1200 if comp == "medium" else 400
-    elif family == "summarization":
-        return 800 if comp == "high" else 300
-    elif family == "translation":
-        return 1500 if comp == "high" else 600
-    elif family == "agent":
-        return 2000
-    elif family == "document_qa":
-        return 600
-    elif family == "reasoning":
-        return 2000 if comp == "high" else 700
-    else:
-        # Chat / general
-        return 1000 if comp == "high" else 400 if comp == "medium" else 150
+    FAMILY_BASE = {
+        "coding": 1800, "agent": 2000, "reasoning": 1500,
+        "mathematics": 800, "document_qa": 600, "summarization": 500,
+        "translation": 400, "extraction": 300, "chat": 350,
+        "creative": 1200, "vision": 400, "ocr": 600,
+        "audio": 400, "image_generation": 100, "video_generation": 100,
+    }
+    base = FAMILY_BASE.get(task.primary_family, 600)
+    COMPLEXITY_MULT = {"low": 0.6, "medium": 1.0, "high": 1.8}
+    mult = COMPLEXITY_MULT.get(getattr(task, 'complexity', 'medium') or 'medium', 1.0)
+    if getattr(task, 'requires_json', False) or getattr(task, 'expected_output', '') == 'structured_json':
+        mult *= 1.3
+    input_scale = min(1.5, max(0.5, task.estimated_tokens / 500.0))
+    result = int(base * mult * min(input_scale, 2.0))
+    return max(50, min(result, 8000))
 
 
 def estimate_request_latency_ms(model: Dict[str, Any], task: TaskFeatures, n_stages: int = 1) -> float:
@@ -374,36 +369,47 @@ def dominates_with_margin(v1: Tuple[float, float, float, float, float], v2: Tupl
     return ge_all and gt_any
 
 
-def pareto_frontier(models: List[Dict[str, Any]], eps: float = 0.02) -> List[Dict[str, Any]]:
-    frontier = []
-    # Precalculate vectors to turn O(N^2) heavy processing into O(N) prep + O(N^2) simple float comparisons
-    vectors = [pareto_vector(m) for m in models]
-    
-    for i, model in enumerate(models):
-        dominated = False
-        v_i = vectors[i]
-        for j, v_j in enumerate(vectors):
-            if i != j and dominates_with_margin(v_j, v_i, eps=eps):
-                dominated = True
-                break
-        
-        if not dominated:
-            frontier.append(model)
-    return frontier
+def pareto_frontier(
+    models: List[Dict[str, Any]],
+    vectors: Optional[List[tuple]] = None,
+    eps: float = 0.02,
+) -> List[Dict[str, Any]]:
+    if not models:
+        return []
+    if vectors is None:
+        vectors = [pareto_vector(m) for m in models]
+    N = len(vectors)
+    if N == 1:
+        return list(models)
+    V = np.array(vectors, dtype=np.float64)
+    D = V.shape[1]
+    # Per-dimension epsilon: tight for cost (index 1), standard for others
+    # Dimensions from pareto_vector: (quality, neg_cost, latency, reliability, runtime)
+    base_eps = np.full(D, eps, dtype=np.float64)
+    if D > 1:
+        base_eps[1] = min(eps, 0.003)  # cost dimension: very tight epsilon so cheap models aren't falsely dominated
+    # diffs[i,j,d] = V[i,d] - V[j,d]  (how much i exceeds j on dim d)
+    diffs = V[:, np.newaxis, :] - V[np.newaxis, :, :]
+    ge_all = np.all(diffs >= -base_eps, axis=-1)   # i >= j (within eps) on all dims
+    gt_any = np.any(diffs > base_eps, axis=-1)      # i > j (beyond eps) on at least one
+    not_self = ~np.eye(N, dtype=bool)
+    dominated = np.any(ge_all & gt_any & not_self, axis=0)  # any i dominates j?
+    return [m for m, d in zip(models, dominated) if not d]
 
 
 # --------------------------------------------------------------------------
 # Utility scoring
 # --------------------------------------------------------------------------
 
-def minmax_normalize(values: List[float], invert: bool = False) -> List[float]:
+def minmax_normalize(values: List[float], lo: float = 0.0, hi: float = 1.0) -> List[float]:
     if not values:
         return []
     vmin, vmax = min(values), max(values)
-    if math.isclose(vmin, vmax):
-        return [0.5] * len(values)
-    base = [(v - vmin) / (vmax - vmin) for v in values]
-    return [1 - x for x in base] if invert else base
+    if abs(vmax - vmin) < 1e-9:
+        mid = (lo + hi) / 2.0
+        return [mid] * len(values)
+    span = vmax - vmin
+    return [lo + (hi - lo) * (v - vmin) / span for v in values]
 
 
 def choose_effective_profile(task: TaskFeatures, requested: str) -> str:
@@ -474,10 +480,10 @@ def compute_utilities(
         
         sla_violation = False
         if rc.max_latency_ms is not None and est_latency > rc.max_latency_ms:
-            utility -= 0.15
+            utility -= 1000.0
             sla_violation = True
         if rc.max_cost_usd is not None and est_cost > rc.max_cost_usd:
-            utility -= 0.15
+            utility -= 1000.0
             sla_violation = True
 
         m["u"] = {

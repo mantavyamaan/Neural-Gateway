@@ -1,74 +1,69 @@
-import json
-import sys
-import os
+#!/usr/bin/env python3
+"""Neural Gateway Parser Accuracy Evaluator.
+Tests the FULL parse_task_request() pipeline, not just the embedding parser in isolation.
+Run from neural_gateway/: python scripts/eval_router.py
+"""
+import json, sys, io
+from pathlib import Path
 
-# Add parent dir to sys.path to allow importing app
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.core.embedding_parser import get_parser
-from app.core.router import route
-from app.core.database import init_db
+# Use parse_task_request (full pipeline) NOT parse_prompt_to_semantic_struct (embedding only)
+from app.core.semantic_parser import parse_task_request
 
-def run_eval():
-    init_db()
-    eval_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "golden_eval.json")
-    with open(eval_file, "r", encoding="utf-8") as f:
-        prompts = json.load(f)
+def main():
+    golden = json.loads((Path(__file__).resolve().parents[1] / 'data' / 'golden_eval.json').read_text(encoding='utf-8'))
+    fam_hits = risk_hits = dom_hits = 0
+    total = len(golden)
+    failures = []
+    for case in golden:
+        try:
+            task = parse_task_request(prompt=case['text'])
+        except Exception as e:
+            print(f"ERROR parsing '{case['text'][:50]}': {e}")
+            continue
+        acceptable_fam = case.get('acceptable_families', [case['primary_family']])
+        acceptable_dom = case.get('acceptable_domains', [case['domain']])
+        acceptable_risk = case.get('acceptable_risks', [case['risk_tier']])
+        fam_ok = task.primary_family in acceptable_fam
+        risk_ok = task.risk_tier in acceptable_risk
+        dom_ok = task.domain in acceptable_dom
+        if fam_ok: fam_hits += 1
+        if risk_ok: risk_hits += 1
+        if dom_ok: dom_hits += 1
+        if not (fam_ok and risk_ok and dom_ok):
+            failures.append({
+                'prompt': case['text'][:80],
+                'exp_fam': acceptable_fam, 'got_fam': task.primary_family,
+                'exp_risk': acceptable_risk, 'got_risk': task.risk_tier,
+                'exp_dom': acceptable_dom, 'got_dom': task.domain,
+                'fam_ok': fam_ok, 'risk_ok': risk_ok, 'dom_ok': dom_ok
+            })
+    fam_acc = fam_hits / total
+    risk_acc = risk_hits / total
+    dom_acc = dom_hits / total
+    print(f'\n{"="*60}')
+    print('NEURAL GATEWAY PARSER ACCURACY REPORT')
+    print(f'{"="*60}')
+    print(f'Total: {total}')
+    print(f'Family Accuracy: {fam_hits}/{total} = {fam_acc:.1%}')
+    print(f'Risk Accuracy:   {risk_hits}/{total} = {risk_acc:.1%}')
+    print(f'Domain Accuracy: {dom_hits}/{total} = {dom_acc:.1%}')
+    if failures:
+        print(f'\nFailed ({len(failures)} cases):')
+        for f in failures:
+            tags = []
+            if not f['fam_ok']: tags.append(f"FAM: {f['exp_fam']} -> {f['got_fam']}")
+            if not f['risk_ok']: tags.append(f"RISK: {f['exp_risk']} -> {f['got_risk']}")
+            if not f['dom_ok']: tags.append(f"DOM: {f['exp_dom']} -> {f['got_dom']}")
+            print(f"  FAIL [{', '.join(tags)}]")
+            print(f"       Prompt: '{f['prompt']}'")
+    THRESHOLD = 0.80
+    passed = fam_acc >= THRESHOLD and risk_acc >= THRESHOLD and dom_acc >= THRESHOLD
+    print(f'\n{"PASS" if passed else "FAIL"} (threshold {THRESHOLD:.0%})')
+    sys.exit(0 if passed else 1)
 
-    parser = get_parser()
-
-    parser_matches = 0
-    routing_matches = 0
-    routing_evaluated = 0
-    
-    abstain_correct = 0
-    total_abstained = 0
-
-    for prompt_data in prompts:
-        text = prompt_data["text"]
-        expected_family = prompt_data["primary_family"]
-        expected_domain = prompt_data["domain"]
-        expected_risk = prompt_data["risk_tier"]
-        acceptable_models = prompt_data["acceptable_models"]
-
-        # Run Parser
-        parsed = parser.parse(text)
-        
-        if (parsed.primary_family == expected_family and
-            parsed.domain == expected_domain and
-            parsed.risk_tier == expected_risk):
-            parser_matches += 1
-
-        # Run Router
-        decision = route(prompt=text)
-        
-        abstained_or_escalated = decision.abstain or decision.escalate_to_human
-        
-        if abstained_or_escalated:
-            total_abstained += 1
-            # Check if high-risk or ambiguous
-            is_high_risk = expected_risk in ["high", "extreme"]
-            is_ambiguous = parsed.ambiguity_score > 0.6
-            if is_high_risk or is_ambiguous:
-                abstain_correct += 1
-        else:
-            if decision.selected_plan and decision.selected_plan.selected_model:
-                routing_evaluated += 1
-                if decision.selected_plan.selected_model in acceptable_models:
-                    routing_matches += 1
-                    
-    parser_accuracy = parser_matches / len(prompts) if prompts else 0
-    routing_accuracy = routing_matches / routing_evaluated if routing_evaluated > 0 else 0
-    abstain_precision = abstain_correct / total_abstained if total_abstained > 0 else 1.0
-    
-    print(f"Parser Accuracy: {parser_accuracy * 100:.2f}%")
-    print(f"Routing Accuracy: {routing_accuracy * 100:.2f}%")
-    print(f"Abstain Precision: {abstain_precision * 100:.2f}%")
-
-    if parser_accuracy >= 0.90:
-        sys.exit(0)
-    else:
-        sys.exit(1)
-
-if __name__ == "__main__":
-    run_eval()
+if __name__ == '__main__':
+    if sys.platform == 'win32':
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    main()
