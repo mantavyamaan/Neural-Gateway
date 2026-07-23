@@ -1,4 +1,4 @@
-﻿# Neural Gateway
+# Neural Gateway
 
 > **🌐 [Try the Live Demo →](https://mantavyamaan.github.io/Neural-Gateway/demo)**
 
@@ -11,30 +11,46 @@ It is a complete, end-to-end AI agent and neural routing gateway, exposed as a F
 neural_gateway/
 ├── app/
 │   ├── main.py                 # FastAPI app entrypoint (uvicorn target)
-│   ├── config.py                # version stamps + confidence thresholds
+│   ├── config.py                # version stamps, feature flags & thresholds
 │   ├── models/
 │   │   ├── schemas.py            # internal dataclasses (TaskFeatures, ExecutionPlan, ...)
 │   │   ├── catalog.py             # provider -> model name catalog
-│   │   ├── registry_builder.py     # fallback heuristics for unmapped models
-│   │   └── real_benchmarks.json    # ground-truth benchmark overrides
+│   │   └── registry_builder.py     # canonical model registry builder & telemetry defaults
 │   ├── core/
-│   │   ├── database.py              # SQLite database and persistence layer
+│   │   ├── database.py              # SQLite persistence layer with in-memory TTL caching
 │   │   ├── openrouter_sync.py       # fetches live models and pricing from OpenRouter API
-│   │   ├── artifact_inspection.py   # PDF/image/audio/video/xlsx/pptx inspection
-│   │   ├── semantic_parser.py        # deterministic + heuristic task parsing
-│   │   ├── feasibility.py             # hard constraint filtering
-│   │   ├── policy.py                   # governance / policy engine
-│   │   ├── scoring.py                   # Bayesian quality, Pareto, utility, confidence
-│   │   ├── planning.py                   # single-model & multi-stage plan generation
-│   │   ├── router.py                      # route() — the main pipeline
-│   │   └── formatting.py                   # human-readable decision summaries
+│   │   ├── benchmark_sync.py        # automated benchmark sync (OpenRouter + HuggingFace Hub)
+│   │   ├── artifact_inspection.py   # PyMuPDF / Pillow / FFprobe / openpyxl / pptx file inspector
+│   │   ├── embedding_parser.py      # ONNX vector embeddings + class-balanced Logistic Regression
+│   │   ├── domain_classifier.py     # semantic embedding domain classifier
+│   │   ├── semantic_parser.py        # task request parsing & topic-driven domain integration
+│   │   ├── feasibility.py             # SLA & hard constraint filtering
+│   │   ├── policy.py                   # governance & policy enforcement engine
+│   │   ├── scoring.py                   # 7D Bayesian quality, vectorized Pareto & utility scoring
+│   │   ├── planning.py                   # single-model & multi-stage execution plan builder
+│   │   ├── verifiers.py                  # local zero-cost AST syntax & JSON schema verifiers
+│   │   ├── router.py                      # route() — primary end-to-end routing engine
+│   │   └── formatting.py                   # human-readable decision summaries & explanations
 │   └── api/
-│       ├── schemas.py                       # pydantic request/response models
-│       └── routes.py                         # FastAPI endpoints
+│       ├── schemas.py                       # Pydantic request/response schemas
+│       └── routes.py                         # FastAPI endpoints (/route, /execute, /train_parser, ...)
+├── data/
+│   ├── semantic_examples.json   # 800+ labeled prompt training examples
+│   ├── domain_examples.json     # domain embedding lookup dataset
+│   └── golden_eval.json         # 80-prompt evaluation benchmark suite
+├── demo/
+│   └── index.html               # interactive client-side web demo
+├── scripts/
+│   ├── eval_router.py           # automated 3-metric accuracy evaluation runner
+│   ├── generate_training_data.py # synthetic dataset generator script
+│   └── run_benchmark_sync.py    # standalone benchmark sync command
 ├── tests/
-│   └── test_router.py                         # end-to-end scenario tests
-├── requirements.txt
-├── .env.example
+│   ├── test_router.py           # end-to-end scenario tests
+│   ├── test_domain_classifier.py # domain classification unit tests
+│   └── test_hardening.py        # SLA constraint & security hardening tests
+├── frontend.py                  # Streamlit control plane & interactive dashboard
+├── requirements.txt             # project dependencies
+├── .env.example                 # environment variables template
 └── README.md
 ```
 
@@ -141,22 +157,20 @@ Response shape (abridged):
 
 Neural Gateway uses a real-time, dynamic **SQLite database** to store its model registry, making it a production-ready routing engine.
 
-When the application starts, `app/core/openrouter_sync.py` connects to the **OpenRouter API** to download the latest available models, their exact context window limits, and live pricing.
+To ensure routing decisions are mathematically precise, `app/core/benchmark_sync.py` automatically fetches real-world performance metrics from the **OpenRouter API** and **HuggingFace Hub API**, population-normalizing capability scores (coding, reasoning, math, SWE-Bench, MMLU, GPQA) across models.
 
-To ensure routing decisions are mathematically precise, it cross-references these models against `app/models/real_benchmarks.json`, which contains manually curated, **ground-truth benchmark scores** (like SWE-Bench and MMLU equivalents) for flagship models like GPT-4o, Claude 3.5 Sonnet, and Llama 3.
-
-For obscure community models that aren't mapped in our benchmark JSON, it explicitly defaults them to an "insufficient evidence" state. By default, `NEURAL_GATEWAY_REQUIRE_MEASURED_EVIDENCE=true` prevents these unknown models from receiving auto-routed traffic unless the tenant overrides the behavior. Tests are also run deterministically to ensure the suite is blazingly fast and works entirely offline.
+For obscure community models that lack capability data, it explicitly defaults them to an "insufficient evidence" state. By default, `NEURAL_GATEWAY_REQUIRE_MEASURED_EVIDENCE=true` prevents these unknown models from receiving auto-routed traffic unless the tenant overrides the behavior. Tests are also run deterministically to ensure the suite is blazingly fast and works entirely offline.
 
 ## The Semantic Vector Parsing Engine
 
-By default, task understanding in Neural Gateway is handled by the **EmbeddingSemanticParser** in `app/core/embedding_parser.py`. It mathematically categorizes requests by computing the Dense Vector against three highly-trained **Logistic Regression Classifiers** and a local **Cross-Encoder** reranker.
+By default, task understanding in Neural Gateway is handled by the **EmbeddingSemanticParser** in `app/core/embedding_parser.py`. It mathematically categorizes requests by computing the Dense Vector against three highly-trained **Logistic Regression Classifiers** (with class balancing) and a local fastembed ONNX model (`BAAI/bge-small-en-v1.5`).
 
-* **Dynamic Training & CI Gate:** You can instantly make the Gateway smarter using the **Train the Engine** UI. When you submit a correction, the backend API (`/train_parser`) encodes your exact prompt into a new vector. Before saving it permanently, it runs a strict local Evaluation Suite. If the new vector degrades the matrix below 90% accuracy, it blocks the change and reverts the RAM matrix, ensuring poison-proof learning.
-* **Deterministic Safety Override Layer:** The system automatically escalates risky keywords (like "suicide" or "drop table") to High/Extreme risk tiers, strictly enforcing safety regardless of statistical voting.
+* **Dynamic Training & CI Gate:** You can instantly make the Gateway smarter using the **Train the Engine** UI. When you submit a correction, the backend API (`/train_parser`) encodes your exact prompt into a new vector. Before saving it permanently, it runs a strict local Evaluation Suite (`scripts/eval_router.py`). If the new vector degrades the matrix below 90% accuracy, it blocks the change and reverts the RAM matrix, ensuring poison-proof learning.
+* **Two-Tier Safety Override Layer:** The system automatically enforces a two-tier safety model: Tier 1 hard regex for severe threats (suicide, `drop table`, `rm -rf`, credential theft) and Tier 2 confidence-gated rules for sensitive domains (medical, legal, finance).
 
 ## Testing
 
-```bashdd
+```bash
 pytest tests/ -v
 ```
 
