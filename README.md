@@ -35,7 +35,7 @@ neural_gateway/
 │       ├── schemas.py                       # Pydantic request/response schemas
 │       └── routes.py                         # FastAPI endpoints (/route, /execute, /train_parser, ...)
 ├── data/
-│   ├── semantic_examples.json   # 800+ labeled prompt training examples
+│   ├── semantic_examples.json   # 6,000+ labeled prompt training examples
 │   ├── domain_examples.json     # domain embedding lookup dataset
 │   └── golden_eval.json         # 80-prompt evaluation benchmark suite
 ├── demo/
